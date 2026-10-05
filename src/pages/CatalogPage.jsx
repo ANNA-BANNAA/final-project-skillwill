@@ -11,18 +11,17 @@ import { Button } from "../components/Button";
 const SORTS = [
   { value: "newest", label: "უახლესი" },
   { value: "oldest", label: "უძველესი" },
-  { value: "price-sb", label: "ფასი: ზრდადი" },
-  { value: "price-bs", label: "ფასი: კლებადი" },
-  { value: "rating", label: "რეიტინგი" },
+  { value: "price-asc", label: "ფასი: ზრდადი" },
+  { value: "price-desc", label: "ფასი: კლებადი" },
+  { value: "rating-desc", label: "რეიტინგი" },
   { value: "popular", label: "პოპულარული" },
-  { value: "title", label: "სახელი: ა-ჰ" },
+  { value: "title-asc", label: "სახელი: ა-ჰ" },
 ];
 
 export default function CatalogPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const topRef = useRef(null);
-
-  const [filters, setFilters] = useState([]);
+  const [category, setCategory] = useState(null);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -31,9 +30,11 @@ export default function CatalogPage() {
   // ძებნის ველი: ცალკე ტექსტი, URL-ში debounce-ით ჩაიწერება
   const [search, setSearch] = useState(searchParams.get("q") || "");
 
-  // 1. ფილტრები სერვერიდან, ერთხელ
   useEffect(() => {
-    api.category(CATEGORY).then((result) => setFilters(result.filters || []));
+    api
+      .category(CATEGORY)
+      .then(setCategory)
+      .catch(() => setCategory(null));
   }, []);
 
   // 2. პროდუქტები ყოველ URL-ის ცვლილებაზე
@@ -61,15 +62,19 @@ export default function CatalogPage() {
     return () => controller.abort();
   }, [queryString, retry]);
 
-  // 3. ძებნა debounce-ით (400ms)
   useEffect(() => {
     const timer = setTimeout(() => {
-      if ((searchParams.get("q") || "") !== search) {
-        updateParam("q", search);
-      }
+      setSearchParams((prev) => {
+        if ((prev.get("q") || "") === search) return prev;
+        const next = new URLSearchParams(prev);
+        if (search) next.set("q", search);
+        else next.delete("q");
+        next.delete("page");
+        return next;
+      });
     }, 400);
     return () => clearTimeout(timer);
-  }, [search]);
+  }, [search, setSearchParams]);
 
   // URL-ის პარამეტრის შეცვლა. ნებისმიერ ცვლილებაზე გვერდი 1-ზე ბრუნდება
   function updateParam(key, value) {
@@ -92,7 +97,7 @@ export default function CatalogPage() {
 
   return (
     <main className="catalog" ref={topRef}>
-      <h1>სამზარეულო</h1>
+      <h1>{category?.name ?? "კატალოგი"}</h1>
 
       <div className="toolbar">
         <input
@@ -110,14 +115,16 @@ export default function CatalogPage() {
           onChange={(e) => updateParam("sort", e.target.value)}
         >
           {SORTS.map((s) => (
-            <option key={s.value} value={s.value}>{s.label}</option>
+            <option key={s.value} value={s.value}>
+              {s.label}
+            </option>
           ))}
         </select>
       </div>
 
       <div className="layout">
         <FilterPanel
-          filters={filters}
+          filters={category?.filters ?? []}
           params={searchParams}
           onChange={updateParam}
           onClear={clearAll}
@@ -144,7 +151,10 @@ export default function CatalogPage() {
             <>
               <div className={loading ? "grid grid-loading" : "grid"}>
                 {data.items.map((product) => (
-                  <ProductCard key={product.id || product.slug} product={product} />
+                  <ProductCard
+                    key={product.id || product.slug}
+                    product={product}
+                  />
                 ))}
               </div>
               <Pagination

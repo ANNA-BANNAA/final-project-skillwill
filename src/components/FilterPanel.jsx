@@ -1,3 +1,4 @@
+import { useState } from "react";
 export function FilterPanel({ filters, params, onChange, onClear }) {
   return (
     <aside className="filters">
@@ -61,19 +62,30 @@ function RadioGroup({ filter, params, onChange }) {
         name={filter.key}
         checked={selected === option.value}
         onChange={() => onChange(filter.key, option.value)}
+         onClick={() => {
+          if (selected === option.value) onChange(filter.key, "");
+        }}
       />
       {option.label}
     </label>
   ));
 }
 
-// range: ფასი min/max ველებით (მარტივი ვერსია)
+// range: ფასი, API-ს ორი ცალკე პარამეტრი უნდა: minPrice და maxPrice
 function RangeFilter({ filter, params, onChange }) {
-  const [minValue, maxValue] = (params.get(filter.key) || "").split("-");
+  const urlMin = params.get("minPrice") || "";
+  const urlMax = params.get("maxPrice") || "";
 
-  function change(newMin, newMax) {
-    if (!newMin && !newMax) onChange(filter.key, "");
-    else onChange(filter.key, (newMin || "") + "-" + (newMax || ""));
+  // ველში აკრეფილი ტექსტი (URL-ში მხოლოდ blur-ზე იწერება)
+  const [min, setMin] = useState(urlMin);
+  const [max, setMax] = useState(urlMax);
+
+  // თუ URL გარედან შეიცვალა (მაგ. "გასუფთავება"), ველებიც განახლდეს
+  const [prevUrl, setPrevUrl] = useState(urlMin + "|" + urlMax);
+  if (prevUrl !== urlMin + "|" + urlMax) {
+    setPrevUrl(urlMin + "|" + urlMax);
+    setMin(urlMin);
+    setMax(urlMax);
   }
 
   return (
@@ -83,8 +95,9 @@ function RangeFilter({ filter, params, onChange }) {
         type="number"
         placeholder={filter.min}
         aria-label={filter.label + " მინიმუმი"}
-        defaultValue={minValue || ""}
-        onBlur={(e) => change(e.target.value, maxValue)}
+        value={min}
+        onChange={(e) => setMin(e.target.value)}
+        onBlur={() => onChange("minPrice", min)}
       />
       <span>–</span>
       <input
@@ -92,8 +105,9 @@ function RangeFilter({ filter, params, onChange }) {
         type="number"
         placeholder={filter.max}
         aria-label={filter.label + " მაქსიმუმი"}
-        defaultValue={maxValue || ""}
-        onBlur={(e) => change(minValue, e.target.value)}
+        value={max}
+        onChange={(e) => setMax(e.target.value)}
+        onBlur={() => onChange("maxPrice", max)}
       />
     </div>
   );

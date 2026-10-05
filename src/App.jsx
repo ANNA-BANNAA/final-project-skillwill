@@ -5,7 +5,8 @@ import {
   Routes,
   useLocation,
 } from "react-router-dom";
-import { AuthProvider, useAuth } from "./AuthContext";
+import { AuthProvider} from "./AuthContext";
+import { useAuth } from "./useAuth";
 import { Header } from "./components/Header";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";

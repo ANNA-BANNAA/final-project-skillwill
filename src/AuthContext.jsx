@@ -1,7 +1,7 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext,  useEffect, useState } from "react";
 import { api, tokenStorage, setTokenExpiredHandler } from "./api";
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   // თუ ტოკენი გვაქვს, ჯერ ვამოწმებთ სერვერზე; თუ არა, პირდაპირ "არ არის შესული"
@@ -36,7 +36,7 @@ export function AuthProvider({ children }) {
     api
       .me()
       .then((data) => {
-        setUser(data);
+        setUser(data.user);
         setStatus("authenticated");
       })
       .catch(() => signOut());
@@ -49,6 +49,3 @@ export function AuthProvider({ children }) {
   );
 }
 
-export function useAuth() {
-  return useContext(AuthContext);
-}

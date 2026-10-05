@@ -1,4 +1,4 @@
-import { useAuth } from "../AuthContext";
+import { useAuth } from "../useAuth";
 import { Button } from "../components/Button";
 import { Link } from "react-router-dom";
 

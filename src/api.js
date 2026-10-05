@@ -24,7 +24,7 @@ export class ApiError extends Error {
 }
 
 // ერთი ფუნქცია ყველა მოთხოვნისთვის
-async function request(path, method = "GET", body) {
+async function request(path, method = "GET", body, signal) {
   const token = tokenStorage.get();
   const headers = {};
   if (body) headers["Content-Type"] = "application/json";
@@ -36,8 +36,10 @@ async function request(path, method = "GET", body) {
       method: method,
       headers: headers,
       body: body ? JSON.stringify(body) : undefined,
+      signal:signal,
     });
   } catch {
+    if (err.name === "AbortError") throw err;
     throw new ApiError(0, { code: "NETWORK_ERROR", message: "სერვერთან დაკავშირება ვერ მოხერხდა" });
   }
 
