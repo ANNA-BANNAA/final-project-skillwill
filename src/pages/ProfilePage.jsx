@@ -14,7 +14,7 @@ const EMPTY = {
 };
 
 export default function ProfilePage() {
-  const { setUser } = useAuth();
+  const { user, setUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [retry, setRetry] = useState(0);
@@ -26,7 +26,7 @@ export default function ProfilePage() {
     handleSubmit,
     reset,
     setError,
-    formState: { errors, isSubmitting, isDirty, dirtyFields },
+    formState: { errors, isSubmitting, isDirty },
   } = useForm({ resolver: zodResolver(profileSchema), defaultValues: EMPTY });
 
   // მიმდინარე მონაცემების ჩატვირთვა და ფორმის შევსება
@@ -51,36 +51,41 @@ export default function ProfilePage() {
       });
   }, [reset, retry]);
 
- async function onSubmit(values) {
+async function onSubmit(values) {
     setBanner("");
     setSuccess(false);
 
-    // შევამოწმოთ, შეცვლილია თუ არა ძირითადი ველები ან შეყვანილია თუ არა პაროლი
-    const hasFieldChanges = Object.keys(dirtyFields).some(
-      (key) => key !== "currentPassword" && key !== "confirmNewPassword" && key !== "newPassword"
-    );
-    const hasPasswordChange = Boolean(values.newPassword);
+    // რეალური შედარება: შევამოწმოთ, განსხვავდება თუ არა შეყვანილი მონაცემები იმისგან, 
+    // რაც სერვერიდან წამოვიდა (ან შეყვანილია თუ არა ახალი პაროლი)
+    const hasChanges = 
+      values.name !== (user?.name || "") ||
+      values.email !== (user?.email || "") ||
+      values.phone !== (user?.phone || "") ||
+      values.city !== (user?.city || "") ||
+      values.address !== (user?.address || "") ||
+      Boolean(values.newPassword);
 
-    if (!hasFieldChanges && !hasPasswordChange) {
+    if (!hasChanges) {
       setBanner("შესაცვლელი არაფერია");
       return;
     }
 
-    // მხოლოდ შეცვლილი ველები (პაროლის ველები გამოვრიცხეთ)
+    // მხოლოდ შეცვლილი ველები
     const changed = {};
-    Object.keys(dirtyFields).forEach((key) => {
-      if (key === "currentPassword" || key === "confirmNewPassword" || key === "newPassword") return;
-      changed[key] = values[key];
-    });
+    if (values.name !== (user?.name || "")) changed.name = values.name;
+    if (values.email !== (user?.email || "")) changed.email = values.email;
+    if (values.phone !== (user?.phone || "")) changed.phone = values.phone;
+    if (values.city !== (user?.city || "")) changed.city = values.city;
+    if (values.address !== (user?.address || "")) changed.address = values.address;
 
     try {
       const payload = { currentPassword: values.currentPassword };
-      if (hasFieldChanges) Object.assign(payload, changed);
-      if (hasPasswordChange) payload.newPassword = values.newPassword;
+      if (Object.keys(changed).length > 0) Object.assign(payload, changed);
+      if (values.newPassword) payload.newPassword = values.newPassword;
 
       const data = await api.updateMe(payload);
       const u = data.user;
-      setUser(u); // ჰედერიც განახლდება
+      setUser(u); 
       reset({
         ...EMPTY,
         name: u.name || "",
@@ -88,7 +93,7 @@ export default function ProfilePage() {
         phone: u.phone || "",
         city: u.city || "",
         address: u.address || "",
-      }); // პაროლის ველები ცარიელდება
+      });
       setSuccess(true);
     } catch (e) {
       if (e.code === "INVALID_CURRENT_PASSWORD") {
@@ -109,7 +114,6 @@ export default function ProfilePage() {
       }
     }
   }
-
   if (loading) {
     return <main className="catalog"><p>იტვირთება...</p></main>;
   }
