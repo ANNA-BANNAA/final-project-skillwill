@@ -1,10 +1,11 @@
-import { useState } from "react";
 export function FilterPanel({ filters, params, onChange, onClear }) {
   return (
     <aside className="filters">
       <div className="filters-head">
         <h2>ფილტრები</h2>
-        <button className="link-btn" onClick={onClear}>გასუფთავება</button>
+        <button className="link-btn" onClick={onClear}>
+          გასუფთავება
+        </button>
       </div>
 
       {filters.map((filter) => (
@@ -12,7 +13,11 @@ export function FilterPanel({ filters, params, onChange, onClear }) {
           <legend>{filter.label}</legend>
 
           {(filter.type === "checkbox" || filter.type === "color") && (
-            <CheckboxGroup filter={filter} params={params} onChange={onChange} />
+            <CheckboxGroup
+              filter={filter}
+              params={params}
+              onChange={onChange}
+            />
           )}
 
           {filter.type === "radio" && (
@@ -30,7 +35,9 @@ export function FilterPanel({ filters, params, onChange, onClear }) {
 
 // checkbox: რამდენიმე მნიშვნელობა მძიმით (?material=oak,metal)
 function CheckboxGroup({ filter, params, onChange }) {
-  const selected = params.get(filter.key) ? params.get(filter.key).split(",") : [];
+  const selected = params.get(filter.key)
+    ? params.get(filter.key).split(",")
+    : [];
 
   function toggle(value) {
     const next = selected.includes(value)
@@ -62,7 +69,7 @@ function RadioGroup({ filter, params, onChange }) {
         name={filter.key}
         checked={selected === option.value}
         onChange={() => onChange(filter.key, option.value)}
-         onClick={() => {
+        onClick={() => {
           if (selected === option.value) onChange(filter.key, "");
         }}
       />
@@ -71,23 +78,10 @@ function RadioGroup({ filter, params, onChange }) {
   ));
 }
 
-// range: ფასი, API-ს ორი ცალკე პარამეტრი უნდა: minPrice და maxPrice
+// range: price min/max — the API expects two separate parameters
 function RangeFilter({ filter, params, onChange }) {
-  const urlMin = params.get("minPrice") || "";
-  const urlMax = params.get("maxPrice") || "";
-
-  // ველში აკრეფილი ტექსტი (URL-ში მხოლოდ blur-ზე იწერება)
-  const [min, setMin] = useState(urlMin);
-  const [max, setMax] = useState(urlMax);
-
-  // თუ URL გარედან შეიცვალა (მაგ. "გასუფთავება"), ველებიც განახლდეს
-  const [prevUrl, setPrevUrl] = useState(urlMin + "|" + urlMax);
-  if (prevUrl !== urlMin + "|" + urlMax) {
-    setPrevUrl(urlMin + "|" + urlMax);
-    setMin(urlMin);
-    setMax(urlMax);
-  }
-
+  const minValue = params.get("minPrice") || "";
+  const maxValue = params.get("maxPrice") || "";
   return (
     <div className="filter-range">
       <input
@@ -95,9 +89,8 @@ function RangeFilter({ filter, params, onChange }) {
         type="number"
         placeholder={filter.min}
         aria-label={filter.label + " მინიმუმი"}
-        value={min}
-        onChange={(e) => setMin(e.target.value)}
-        onBlur={() => onChange("minPrice", min)}
+        value={minValue}
+        onChange={(e) => onChange("minPrice", e.target.value)}
       />
       <span>–</span>
       <input
@@ -105,9 +98,8 @@ function RangeFilter({ filter, params, onChange }) {
         type="number"
         placeholder={filter.max}
         aria-label={filter.label + " მაქსიმუმი"}
-        value={max}
-        onChange={(e) => setMax(e.target.value)}
-        onBlur={() => onChange("maxPrice", max)}
+        value={maxValue}
+        onChange={(e) => onChange("maxPrice", e.target.value)}
       />
     </div>
   );
