@@ -51,22 +51,34 @@ export default function ProfilePage() {
       });
   }, [reset, retry]);
 
-  async function onSubmit(values) {
+ async function onSubmit(values) {
     setBanner("");
     setSuccess(false);
 
-    // მხოლოდ შეცვლილი ველები (პაროლის ველები გამოვრიცხეთ, ისინი ქვემოთ მიდის)
+    // შევამოწმოთ, შეცვლილია თუ არა ძირითადი ველები ან შეყვანილია თუ არა პაროლი
+    const hasFieldChanges = Object.keys(dirtyFields).some(
+      (key) => key !== "currentPassword" && key !== "confirmNewPassword" && key !== "newPassword"
+    );
+    const hasPasswordChange = Boolean(values.newPassword);
+
+    if (!hasFieldChanges && !hasPasswordChange) {
+      setBanner("შესაცვლელი არაფერია");
+      return;
+    }
+
+    // მხოლოდ შეცვლილი ველები (პაროლის ველები გამოვრიცხეთ)
     const changed = {};
     Object.keys(dirtyFields).forEach((key) => {
-      if (key === "currentPassword" || key === "confirmNewPassword") return;
+      if (key === "currentPassword" || key === "confirmNewPassword" || key === "newPassword") return;
       changed[key] = values[key];
     });
 
     try {
-      const data = await api.updateMe({
-        currentPassword: values.currentPassword,
-        ...changed,
-      });
+      const payload = { currentPassword: values.currentPassword };
+      if (hasFieldChanges) Object.assign(payload, changed);
+      if (hasPasswordChange) payload.newPassword = values.newPassword;
+
+      const data = await api.updateMe(payload);
       const u = data.user;
       setUser(u); // ჰედერიც განახლდება
       reset({
