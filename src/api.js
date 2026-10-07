@@ -36,11 +36,14 @@ async function request(path, method = "GET", body, signal) {
       method: method,
       headers: headers,
       body: body ? JSON.stringify(body) : undefined,
-      signal:signal,
+      signal: signal,
     });
-  } catch {
+  } catch (err) {
     if (err.name === "AbortError") throw err;
-    throw new ApiError(0, { code: "NETWORK_ERROR", message: "სერვერთან დაკავშირება ვერ მოხერხდა" });
+    throw new ApiError(0, {
+      code: "NETWORK_ERROR",
+      message: "სერვერთან დაკავშირება ვერ მოხერხდა",
+    });
   }
 
   if (res.status === 204) return null;
@@ -61,12 +64,14 @@ export const api = {
   register: (body) => request("/auth/register", "POST", body),
   login: (body) => request("/auth/login", "POST", body),
   me: () => request("/auth/me"),
+  updateMe: (body) => request("/auth/me", "PATCH", body),
   forgotPassword: (body) => request("/auth/forgot-password", "POST", body),
   verifyResetCode: (body) => request("/auth/verify-reset-code", "POST", body),
   resetPassword: (body) => request("/auth/reset-password", "POST", body),
 
   // კატალოგი
   category: (slug) => request("/categories/" + slug),
-  products: (query, signal) => request("/products?" + query, "GET", undefined, signal),
+  products: (query, signal) =>
+    request("/products?" + query, "GET", undefined, signal),
   product: (slug) => request("/products/" + slug),
 };

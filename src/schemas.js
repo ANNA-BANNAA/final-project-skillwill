@@ -46,3 +46,26 @@ export const newPasswordSchema = z
     path: ["confirmPassword"],
     message: "პაროლები არ ემთხვევა",
   });
+  // პროფილი: ცარიელი ველი დაშვებულია (ასუფთავებს), მაგრამ თუ შეავსე, წესები მოქმედებს
+const optional = (rule) => z.union([z.literal(""), rule]);
+
+export const profileSchema = z
+  .object({
+    name: z.string().min(2, "სახელი მინიმუმ 2 სიმბოლო უნდა იყოს"),
+    email: email,
+    phone: optional(
+      z.string()
+        .min(9, "ტელეფონი მინიმუმ 9 სიმბოლო უნდა იყოს")
+        .max(20, "ტელეფონი მაქსიმუმ 20 სიმბოლო უნდა იყოს")
+        .regex(/^\+?[\d\s()-]+$/, "მაგალითი: +995 555 12 34 56")
+    ),
+    city: optional(z.string().min(2, "ქალაქი მინიმუმ 2 სიმბოლო უნდა იყოს")),
+    address: optional(z.string().min(5, "მისამართი მინიმუმ 5 სიმბოლო უნდა იყოს")),
+    newPassword: optional(strongPassword),
+    confirmNewPassword: z.string(),
+    currentPassword: z.string().min(1, "შეიყვანეთ მიმდინარე პაროლი"),
+  })
+  .refine((d) => d.newPassword === d.confirmNewPassword, {
+    path: ["confirmNewPassword"],
+    message: "პაროლები არ ემთხვევა",
+  });

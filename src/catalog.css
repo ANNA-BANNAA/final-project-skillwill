@@ -354,3 +354,16 @@
         grid-template-columns: 1fr;
     }
 }
+
+.profile-card {
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 24px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.profile-card h1 { margin: 0 0 8px; font-size: 1.5rem; }
+.profile-hint { margin: 0 0 var(--space); color: var(--gray); font-size: 0.9rem; }
+.profile-subtitle { margin: 8px 0 0; font-size: 1.05rem; }
