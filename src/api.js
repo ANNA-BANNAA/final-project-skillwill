@@ -38,7 +38,7 @@ async function request(path, method = "GET", body, signal) {
       body: body ? JSON.stringify(body) : undefined,
       signal:signal,
     });
-  } catch {
+  } catch (err){
     if (err.name === "AbortError") throw err;
     throw new ApiError(0, { code: "NETWORK_ERROR", message: "სერვერთან დაკავშირება ვერ მოხერხდა" });
   }
