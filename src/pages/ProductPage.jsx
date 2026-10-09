@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { api } from "../api";
 import { ProductCard } from "../components/ProductCard";
 import { Button } from "../components/Button";
+import { AddToCartButton } from "../components/AddToCartButton";
 
 export default function ProductPage() {
   const { slug } = useParams(); // URL-იდან: /product/:slug
@@ -31,7 +32,11 @@ export default function ProductPage() {
   }, [slug, retry]);
 
   if (loading) {
-    return <main className="catalog"><p>იტვირთება...</p></main>;
+    return (
+      <main className="catalog">
+        <p>იტვირთება...</p>
+      </main>
+    );
   }
 
   if (error || !product) {
@@ -86,16 +91,23 @@ export default function ProductPage() {
             {hasDiscount && (
               <>
                 <s className="card-old-price">{product.oldPrice} ₾</s>
-                <span className="card-discount">-{product.discountPercent}%</span>
+                <span className="card-discount">
+                  -{product.discountPercent}%
+                </span>
               </>
             )}
           </div>
 
-          <p className="card-rating">★ {product.rating} ({product.reviewsCount})</p>
+          <p className="card-rating">
+            ★ {product.rating} ({product.reviewsCount})
+          </p>
           <p className={product.inStock ? "in-stock" : "out-of-stock"}>
             {product.inStock ? "მარაგშია" : "არ არის მარაგში"}
           </p>
-          {product.warrantyMonths > 0 && <p>გარანტია: {product.warrantyMonths} თვე</p>}
+          {product.warrantyMonths > 0 && (
+            <p>გარანტია: {product.warrantyMonths} თვე</p>
+          )}
+          <AddToCartButton product={product} />
         </div>
       </div>
 
