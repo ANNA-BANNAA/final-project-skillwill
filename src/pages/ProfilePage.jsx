@@ -14,20 +14,34 @@ const EMPTY = {
 };
 
 export default function ProfilePage() {
-  const { user, setUser } = useAuth();
+  const { setUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
   const [retry, setRetry] = useState(0);
   const [banner, setBanner] = useState("");
   const [success, setSuccess] = useState(false);
+  const [loaded, setLoaded] = useState(null);
 
   const {
     register,
     handleSubmit,
     reset,
     setError,
-    formState: { errors, isSubmitting, isDirty },
+    watch,
+    formState: { errors, isSubmitting },
   } = useForm({ resolver: zodResolver(profileSchema), defaultValues: EMPTY });
+
+  const values = watch();
+
+  // ლიფტინგი: შედარების ლოგიკა გამოიყენება როგორც ღილაკის state-ისთვის, ისე submit-ისთვის
+  const hasChanges = loaded ? (
+    values.name !== (loaded.name || "") ||
+    values.email !== (loaded.email || "") ||
+    values.phone !== (loaded.phone || "") ||
+    values.city !== (loaded.city || "") ||
+    values.address !== (loaded.address || "") ||
+    Boolean(values.newPassword)
+  ) : false;
 
   // მიმდინარე მონაცემების ჩატვირთვა და ფორმის შევსება
   useEffect(() => {
@@ -35,6 +49,7 @@ export default function ProfilePage() {
       .me()
       .then((data) => {
         const u = data.user;
+        setLoaded(u);
         reset({
           ...EMPTY,
           name: u.name || "",
@@ -51,19 +66,14 @@ export default function ProfilePage() {
       });
   }, [reset, retry]);
 
-async function onSubmit(values) {
+  // წარმატების შეტყობინების გასუფთავება როგორც კი მომხმარებელი რამეს შეცვლის
+  useEffect(() => {
+    if (success) setSuccess(false);
+  }, [values]);
+
+  async function onSubmit(formValues) {
     setBanner("");
     setSuccess(false);
-
-    // რეალური შედარება: შევამოწმოთ, განსხვავდება თუ არა შეყვანილი მონაცემები იმისგან, 
-    // რაც სერვერიდან წამოვიდა (ან შეყვანილია თუ არა ახალი პაროლი)
-    const hasChanges = 
-      values.name !== (user?.name || "") ||
-      values.email !== (user?.email || "") ||
-      values.phone !== (user?.phone || "") ||
-      values.city !== (user?.city || "") ||
-      values.address !== (user?.address || "") ||
-      Boolean(values.newPassword);
 
     if (!hasChanges) {
       setBanner("შესაცვლელი არაფერია");
@@ -72,19 +82,20 @@ async function onSubmit(values) {
 
     // მხოლოდ შეცვლილი ველები
     const changed = {};
-    if (values.name !== (user?.name || "")) changed.name = values.name;
-    if (values.email !== (user?.email || "")) changed.email = values.email;
-    if (values.phone !== (user?.phone || "")) changed.phone = values.phone;
-    if (values.city !== (user?.city || "")) changed.city = values.city;
-    if (values.address !== (user?.address || "")) changed.address = values.address;
+    if (formValues.name !== (loaded?.name || "")) changed.name = formValues.name;
+    if (formValues.email !== (loaded?.email || "")) changed.email = formValues.email;
+    if (formValues.phone !== (loaded?.phone || "")) changed.phone = formValues.phone;
+    if (formValues.city !== (loaded?.city || "")) changed.city = formValues.city;
+    if (formValues.address !== (loaded?.address || "")) changed.address = formValues.address;
 
     try {
-      const payload = { currentPassword: values.currentPassword };
+      const payload = { currentPassword: formValues.currentPassword };
       if (Object.keys(changed).length > 0) Object.assign(payload, changed);
-      if (values.newPassword) payload.newPassword = values.newPassword;
+      if (formValues.newPassword) payload.newPassword = formValues.newPassword;
 
       const data = await api.updateMe(payload);
       const u = data.user;
+      setLoaded(u);
       setUser(u); 
       reset({
         ...EMPTY,
@@ -97,15 +108,17 @@ async function onSubmit(values) {
       setSuccess(true);
     } catch (e) {
       if (e.code === "INVALID_CURRENT_PASSWORD") {
-        setError("currentPassword", { message: "პაროლი არასწორია" });
+        setError("currentPassword", { message: "პაროლი არასწორია" }, { shouldFocus: true });
       } else if (e.code === "EMAIL_TAKEN") {
-        setError("email", { message: "ეს ელფოსტა უკვე რეგისტრირებულია" });
+        setError("email", { message: "ეს ელფოსტა უკვე რეგისტრირებულია" }, { shouldFocus: true });
       } else if (e.status === 422 && e.errors) {
         if (e.errors._) {
           setBanner("შესაცვლელი არაფერია");
         }
-        Object.entries(e.errors).forEach(([field, message]) => {
-          if (field !== "_") setError(field, { message });
+        Object.entries(e.errors).forEach(([field, message], index) => {
+          if (field !== "_") {
+            setError(field, { message }, { shouldFocus: index === 0 });
+          }
         });
       } else if (e.code === "NETWORK_ERROR") {
         setBanner(e.message);
@@ -114,6 +127,7 @@ async function onSubmit(values) {
       }
     }
   }
+
   if (loading) {
     return <main className="catalog"><p>იტვირთება...</p></main>;
   }
@@ -165,7 +179,7 @@ async function onSubmit(values) {
           <FormField label="მიმდინარე პაროლი" id="currentPassword" password autoComplete="current-password"
             error={errors.currentPassword?.message} {...register("currentPassword")} />
 
-          <Button type="submit" fullWidth loading={isSubmitting} disabled={!isDirty}>
+          <Button type="submit" fullWidth loading={isSubmitting} disabled={!hasChanges}>
             შენახვა
           </Button>
         </form>
