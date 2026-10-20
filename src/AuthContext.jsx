@@ -1,11 +1,13 @@
-import { createContext,  useEffect, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import { api, tokenStorage, setTokenExpiredHandler } from "./api";
 
 export const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
   // თუ ტოკენი გვაქვს, ჯერ ვამოწმებთ სერვერზე; თუ არა, პირდაპირ "არ არის შესული"
-  const [status, setStatus] = useState(tokenStorage.get() ? "loading" : "unauthenticated");
+  const [status, setStatus] = useState(
+    tokenStorage.get() ? "loading" : "unauthenticated",
+  );
   const [user, setUser] = useState(null);
   const [expired, setExpired] = useState(false);
 
@@ -43,9 +45,10 @@ export function AuthProvider({ children }) {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ status, user, expired, signIn, signOut }}>
+    <AuthContext.Provider
+      value={{ status, user, expired, signIn, signOut, setUser }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
-

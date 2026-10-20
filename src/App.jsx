@@ -5,7 +5,7 @@ import {
   Routes,
   useLocation,
 } from "react-router-dom";
-import { AuthProvider} from "./AuthContext";
+import { AuthProvider } from "./AuthContext";
 import { useAuth } from "./useAuth";
 import { Header } from "./components/Header";
 import LoginPage from "./pages/LoginPage";
@@ -14,7 +14,9 @@ import ForgotPasswordPage from "./pages/ForgotPasswordPage";
 import HomePage from "./pages/HomePage";
 import CatalogPage from "./pages/CatalogPage";
 import ProductPage from "./pages/ProductPage";
+import ProfilePage from "./pages/ProfilePage";
 import { Footer } from "./components/Footer";
+
 function Loader() {
   return (
     <div style={{ minHeight: "100vh", display: "grid", placeItems: "center" }}>
@@ -83,10 +85,18 @@ export default function App() {
 
           {/* დაცული: მხოლოდ შესულებისთვის */}
           <Route
-            path="/profile"
+            path="/home"
             element={
               <Protected>
                 <HomePage />
+              </Protected>
+            }
+          />
+          <Route
+            path="/profile"
+            element={
+              <Protected>
+                <ProfilePage />
               </Protected>
             }
           />
