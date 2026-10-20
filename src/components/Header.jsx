@@ -5,6 +5,7 @@ import { useCart } from "../useCart";
 export function Header() {
   const { status, user, signOut } = useAuth();
   const { cart } = useCart();
+  const qty = cart?.totalQty ?? 0;
 
   return (
     <header className="header">
@@ -15,6 +16,10 @@ export function Header() {
       <nav className="header-nav">
         {status === "authenticated" ? (
           <>
+            <Link to="/cart" aria-label={`კალათა, ${qty} ნივთი`}>
+              🛒
+              {qty > 0 && <span className="badge">{qty}</span>}
+            </Link>
             <Link to="/profile">{user?.name}</Link>
             <button className="header-btn" onClick={signOut}>
               Sign out
@@ -22,15 +27,6 @@ export function Header() {
           </>
         ) : status === "unauthenticated" ? (
           <>
-            <Link
-              to="/cart"
-              aria-label={"კალათა, " + (cart?.totalQty ?? 0) + " ნივთი"}
-            >
-            კალათა 🛒
-              {cart?.totalQty > 0 && (
-                <span className="badge">{cart.totalQty}</span>
-              )}
-            </Link>
             <Link to="/login">Sign in</Link>
             <Link to="/register">Sign up</Link>
           </>

@@ -72,9 +72,10 @@ export const api = {
   // კატალოგი
   category: (slug) => request("/categories/" + slug),
   products: (query, signal) =>
-    request("/products?" + query, "GET", undefined, signal),
+  request("/products?" + query, "GET", undefined, signal),
   product: (slug) => request("/products/" + slug),
 
+  //კალათა
   cart: () => request("/cart"),
   addToCart: (body) => request("/cart/items", "POST", body),
   updateCartItem: (id, body) => request("/cart/items/" + id, "PATCH", body),
