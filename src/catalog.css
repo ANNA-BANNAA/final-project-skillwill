@@ -124,42 +124,241 @@
     border-radius: var(--radius);
 }
 
+/* ===== Header ===== */
+html {
+    scroll-behavior: smooth;
+}
 
 .header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 12px var(--space);
+    gap: 24px;
+    padding: 12px 24px;
     background: var(--white);
     border-bottom: 1px solid var(--border);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
+/* ლოგო */
 .header-logo {
-    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--primary);
+    font-size: 1.25rem;
     font-weight: 700;
     text-decoration: none;
+    white-space: nowrap;
 }
 
+.header-logo-icon {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: #eef2ff;
+    font-size: 1.3rem;
+}
+
+/* შუა ბმულები */
+.header-links {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.header-links a {
+    padding: 8px 12px;
+    border-radius: var(--radius);
+    color: var(--text);
+    font-weight: 500;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.header-links a:hover {
+    background: #eef2ff;
+    color: var(--primary);
+}
+
+/* მარჯვენა მხარე */
 .header-nav {
     display: flex;
     align-items: center;
-    gap: var(--space);
+    gap: 8px;
 }
 
 .header-nav a {
-    color: var(--primary);
+    position: relative;
+    padding: 8px 12px;
+    border-radius: var(--radius);
+    color: var(--text);
     font-weight: 600;
     text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+}
+
+.header-nav a:hover {
+    background: #eef2ff;
+    color: var(--primary);
+}
+
+/* ბოლო ბმული (რეგისტრაცია) გამოვყოთ ღილაკივით */
+.header-nav a:last-child:not(:first-child) {
+    background: var(--primary);
+    color: var(--white);
+}
+
+.header-nav a:last-child:not(:first-child):hover {
+    background: #4338ca;
+    color: var(--white);
 }
 
 .header-btn {
-    border: 0;
-    background: none;
-    color: var(--primary);
+    padding: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--white);
+    color: var(--text);
     font: inherit;
     font-weight: 600;
     cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
 }
+
+.header-btn:hover {
+    border-color: var(--red);
+    color: var(--red);
+}
+
+/* კალათის ბეჯი */
+.badge {
+    display: inline-block;
+    min-width: 20px;
+    margin-left: 4px;
+    padding: 0 6px;
+    border-radius: 10px;
+    background: var(--primary);
+    color: var(--white);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 20px;
+    text-align: center;
+}
+
+/* ტაბლეტი და მობილური */
+@media (max-width: 768px) {
+    .header {
+        flex-wrap: wrap;
+        gap: 8px 12px;
+        padding: 10px var(--space);
+    }
+
+    .header-links {
+        order: 3;
+        width: 100%;
+        justify-content: space-between;
+        padding-top: 8px;
+        border-top: 1px solid var(--border);
+        font-size: 0.9rem;
+    }
+
+    .header-links a {
+        padding: 6px 8px;
+    }
+
+    .header-nav {
+        gap: 4px;
+    }
+
+    .header-nav a {
+        padding: 6px 8px;
+    }
+}
+
+/* ტექსტური გვერდები */
+.page-text h1 {
+    margin-bottom: 8px;
+}
+
+.lead {
+    max-width: 720px;
+    font-size: 1.1rem;
+    color: var(--gray);
+}
+
+.about-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space);
+    margin: 24px 0;
+}
+
+.blog-list {
+    list-style: none;
+    margin: var(--space) 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: var(--space);
+}
+
+.blog-card {
+    display: grid;
+    gap: 8px;
+    align-content: start;
+    padding: var(--space);
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.blog-card:hover {
+    border-color: var(--primary);
+}
+
+.blog-card h2 {
+    margin: 0;
+    font-size: 1.15rem;
+}
+
+.blog-card p {
+    margin: 0;
+    color: var(--gray);
+}
+
+.blog-article {
+    max-width: 720px;
+    margin-top: var(--space);
+    padding: 24px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.blog-article p {
+    line-height: 1.7;
+}
+
+.contact-layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space);
+    margin-top: var(--space);
+    align-items: start;
+}
+
+textarea.input {
+    min-height: 120px;
+    padding: 12px;
+    resize: vertical;
+}
+
 
 .toolbar {
     display: flex;
@@ -333,15 +532,47 @@
 
 .footer {
     margin-top: 48px;
-    padding: 24px var(--space);
-    border-top: 1px solid var(--border);
-    background: var(--white);
-    text-align: center;
-    color: var(--gray);
+    padding: 32px var(--space) 16px;
+    background: #1f2937;
+    border-top: 0;
+    color: #d1d5db;
+    text-align: left;
 }
 
-.footer p {
-    margin: 0;
+.footer-inner {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-col p {
+    margin: 4px 0;
+}
+
+.footer-title {
+    margin: 0 0 8px;
+    color: var(--white);
+    font-size: 1rem;
+}
+
+.footer a {
+    color: #c7d2fe;
+    text-decoration: none;
+}
+
+.footer a:hover {
+    color: var(--white);
+    text-decoration: underline;
+}
+
+.footer-copy {
+    margin-top: 24px !important;
+    padding-top: 16px;
+    border-top: 1px solid #374151;
+    text-align: center;
+    color: #9ca3af;
 }
 
 
@@ -482,6 +713,117 @@
     margin: 0;
 }
 
+
+.checkout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 24px;
+    align-items: start;
+}
+
+.pay-section {
+    display: grid;
+    gap: var(--space);
+    padding: var(--space);
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.pay-section h2 {
+    margin: 0;
+    font-size: 1.1rem;
+}
+
+.summary-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 8px;
+}
+
+.summary-list li {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    overflow-wrap: anywhere;
+}
+
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin: 0;
+}
+
+.summary-total {
+    font-weight: 700;
+    font-size: 1.1rem;
+}
+
+
+
+.orders-list {
+    list-style: none;
+    margin: var(--space) 0 0;
+    padding: 0;
+    display: grid;
+    gap: 12px;
+}
+
+.order-card {
+    display: grid;
+    gap: 12px;
+    padding: var(--space);
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+}
+
+.order-card:hover {
+    border-color: var(--primary);
+}
+
+.order-card-top,
+.order-card-bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space);
+}
+
+.order-date {
+    color: var(--gray);
+}
+
+.order-status {
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: var(--bg);
+    color: var(--gray);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.order-status-paid {
+    background: #f0fdf4;
+    color: var(--green);
+}
+
+.order-total {
+    font-size: 1.2rem;
+}
+
+.order-link {
+    color: var(--primary);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.order-link:hover {
+    text-decoration: underline;
+}
+
 @media (max-width: 768px) {
     .layout {
         grid-template-columns: 1fr;
@@ -501,5 +843,18 @@
 
     .cart-summary {
         justify-items: stretch;
+    }
+
+    .checkout {
+        grid-template-columns: 1fr;
+    }
+
+    .footer-inner {
+        grid-template-columns: 1fr;
+    }
+
+    .about-grid,
+    .contact-layout {
+        grid-template-columns: 1fr;
     }
 }

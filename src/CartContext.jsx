@@ -8,11 +8,22 @@ export function CartProvider({ children }) {
   const { status } = useAuth();
   const [cart, setCart] = useState(null);
   const [busy, setBusy] = useState(false); // მოთხოვნა მიმდინარეობს
+  // კალათის ხელახლა ჩამოტვირთვა (გადახდის შემდეგ ცარიელი იქნება)
+  async function reload() {
+    try {
+      setCart(await api.cart());
+    } catch {
+      setCart(null);
+    }
+  }
 
   // შესვლისას კალათას ვტვირთავთ, გამოსვლისას ვასუფთავებთ
   useEffect(() => {
     if (status === "authenticated") {
-      api.cart().then(setCart).catch(() => setCart(null));
+      api
+        .cart()
+        .then(setCart)
+        .catch(() => setCart(null));
     } else if (status === "unauthenticated") {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setCart(null);
@@ -36,6 +47,7 @@ export function CartProvider({ children }) {
   const value = {
     cart,
     busy,
+    reload,
     add: (productId, qty = 1) => run(() => api.addToCart({ productId, qty })),
     setQty: (itemId, qty) => run(() => api.updateCartItem(itemId, { qty })),
     remove: (itemId) => run(() => api.removeCartItem(itemId)),

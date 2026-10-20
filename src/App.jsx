@@ -11,12 +11,19 @@ import { Header } from "./components/Header";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ForgotPasswordPage from "./pages/ForgotPasswordPage";
-import HomePage from "./pages/HomePage";
 import CatalogPage from "./pages/CatalogPage";
 import ProductPage from "./pages/ProductPage";
 import ProfilePage from "./pages/ProfilePage";
 import { CartProvider } from "./CartContext";
 import CartPage from "./pages/CartPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import ConfirmPage from "./pages/ConfirmPage";
+import OrderPage from "./pages/OrderPage";
+import OrdersPage from "./pages/OrdersPage";
+import AboutPage from "./pages/AboutPage";
+import BlogPage from "./pages/BlogPage";
+import BlogPostPage from "./pages/BlogPostPage";
+import ContactPage from "./pages/ContactPage";
 import { Footer } from "./components/Footer";
 
 function Loader() {
@@ -55,6 +62,10 @@ export default function App() {
         <CartProvider>
           <Header />
           <Routes>
+            <Route path="/about" element={<AboutPage />} />
+            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/blog/:id" element={<BlogPostPage />} />
+            <Route path="/contact" element={<ContactPage />} />
             {/* ღია გვერდები: ყველას შეუძლია ნახოს */}
             <Route path="/" element={<CatalogPage />} />
             <Route path="/catalog" element={<CatalogPage />} />
@@ -87,14 +98,7 @@ export default function App() {
             />
 
             {/* დაცული: მხოლოდ შესულებისთვის */}
-            <Route
-              path="/home"
-              element={
-                <Protected>
-                  <HomePage />
-                </Protected>
-              }
-            />
+          
             <Route
               path="/profile"
               element={
@@ -108,6 +112,38 @@ export default function App() {
               element={
                 <Protected>
                   <CartPage />
+                </Protected>
+              }
+            />
+            <Route
+              path="/checkout"
+              element={
+                <Protected>
+                  <CheckoutPage />
+                </Protected>
+              }
+            />
+            <Route
+              path="/checkout/confirm/:orderId"
+              element={
+                <Protected>
+                  <ConfirmPage />
+                </Protected>
+              }
+            />
+            <Route
+              path="/orders/:id"
+              element={
+                <Protected>
+                  <OrderPage />
+                </Protected>
+              }
+            />
+            <Route
+              path="/orders"
+              element={
+                <Protected>
+                  <OrdersPage />
                 </Protected>
               }
             />

@@ -20,6 +20,7 @@ export class ApiError extends Error {
     this.status = status;
     this.code = body.code || "UNKNOWN";
     this.errors = body.errors;
+    this.body = body;
   }
 }
 
@@ -72,7 +73,7 @@ export const api = {
   // კატალოგი
   category: (slug) => request("/categories/" + slug),
   products: (query, signal) =>
-  request("/products?" + query, "GET", undefined, signal),
+    request("/products?" + query, "GET", undefined, signal),
   product: (slug) => request("/products/" + slug),
 
   //კალათა
@@ -80,4 +81,13 @@ export const api = {
   addToCart: (body) => request("/cart/items", "POST", body),
   updateCartItem: (id, body) => request("/cart/items/" + id, "PATCH", body),
   removeCartItem: (id) => request("/cart/items/" + id, "DELETE"),
+
+  //ჩექაუთი
+  checkout: () => request("/checkout"),
+  createOrder: (body) => request("/orders", "POST", body),
+  confirmOrder: (id, code) =>
+    request(`/orders/${id}/confirm`, "POST", { code }),
+  resendCode: (id) => request("/orders/" + id + "/resend-code", "POST"),
+  order: (id) => request("/orders/" + id),
+  orders: () => request("/orders"),
 };

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate} from "react-router-dom";
 import { useCart } from "../useCart";
 import { Button } from "../components/Button";
 import { Alert } from "../components/Alert";
@@ -7,9 +7,14 @@ import { Alert } from "../components/Alert";
 export default function CartPage() {
   const { cart, busy, setQty, remove } = useCart();
   const [error, setError] = useState("");
+  const navigate = useNavigate();
 
   if (!cart) {
-    return <main className="catalog"><p>იტვირთება...</p></main>;
+    return (
+      <main className="catalog">
+        <p>იტვირთება...</p>
+      </main>
+    );
   }
 
   async function changeQty(item, qty) {
@@ -37,7 +42,9 @@ export default function CartPage() {
       <main className="catalog">
         <div className="state-box">
           <p>კალათა ცარიელია</p>
-          <Link to="/"><Button>კატალოგში დაბრუნება</Button></Link>
+          <Link to="/">
+            <Button>კატალოგში დაბრუნება</Button>
+          </Link>
         </div>
       </main>
     );
@@ -57,13 +64,21 @@ export default function CartPage() {
           const tooMany = item.qty > item.product.stock;
           return (
             <li className="cart-item" key={item.id}>
-              <img className="cart-image" src={item.product.image} alt={item.product.title} />
+              <img
+                className="cart-image"
+                src={item.product.image}
+                alt={item.product.title}
+              />
 
               <div className="cart-info">
-                <Link to={"/product/" + item.product.slug}>{item.product.title}</Link>
+                <Link to={"/product/" + item.product.slug}>
+                  {item.product.title}
+                </Link>
                 <p className="card-brand">{item.product.price} ₾ / ცალი</p>
                 {tooMany && (
-                  <p className="field-error">მარაგში მხოლოდ {item.product.stock} ცალია</p>
+                  <p className="field-error">
+                    მარაგში მხოლოდ {item.product.stock} ცალია
+                  </p>
                 )}
               </div>
 
@@ -74,7 +89,9 @@ export default function CartPage() {
                   aria-label={"შემცირება: " + item.product.title}
                   disabled={busy || item.qty <= 1}
                   onClick={() => changeQty(item, item.qty - 1)}
-                >−</button>
+                >
+                  −
+                </button>
                 <span aria-live="polite">{item.qty}</span>
                 <button
                   type="button"
@@ -82,7 +99,9 @@ export default function CartPage() {
                   aria-label={"გაზრდა: " + item.product.title}
                   disabled={busy || item.qty >= max}
                   onClick={() => changeQty(item, item.qty + 1)}
-                >+</button>
+                >
+                  +
+                </button>
               </div>
 
               <strong className="cart-line-total">{item.lineTotal} ₾</strong>
@@ -93,15 +112,24 @@ export default function CartPage() {
                 aria-label={"წაშლა: " + item.product.title}
                 disabled={busy}
                 onClick={() => removeItem(item)}
-              >🗑</button>
+              >
+                🗑
+              </button>
             </li>
           );
         })}
       </ul>
 
       <div className="cart-summary">
-        <p>ჯამი ({cart.totalQty} ნივთი): <strong>{cart.subtotal} ₾</strong></p>
-        <Button disabled={hasStockProblem}>ჩექაუთზე გადასვლა</Button>
+        <p>
+          ჯამი ({cart.totalQty} ნივთი): <strong>{cart.subtotal} ₾</strong>
+        </p>
+        <Button
+          disabled={hasStockProblem}
+          onClick={() => navigate("/checkout")}
+        >
+          ჩექაუთზე გადასვლა
+        </Button>
         {hasStockProblem && (
           <p className="field-error">გაასწორეთ რაოდენობა, სანამ გააგრძელებთ</p>
         )}
