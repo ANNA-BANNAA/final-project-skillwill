@@ -15,6 +15,8 @@ import HomePage from "./pages/HomePage";
 import CatalogPage from "./pages/CatalogPage";
 import ProductPage from "./pages/ProductPage";
 import ProfilePage from "./pages/ProfilePage";
+import { CartProvider } from "./CartContext";
+import CartPage from "./pages/CartPage";
 import { Footer } from "./components/Footer";
 
 function Loader() {
@@ -50,60 +52,70 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <Header />
-        <Routes>
-          {/* ღია გვერდები: ყველას შეუძლია ნახოს */}
-          <Route path="/" element={<CatalogPage />} />
-          <Route path="/catalog" element={<CatalogPage />} />
-          <Route path="/product/:slug" element={<ProductPage />} />
+        <CartProvider>
+          <Header />
+          <Routes>
+            {/* ღია გვერდები: ყველას შეუძლია ნახოს */}
+            <Route path="/" element={<CatalogPage />} />
+            <Route path="/catalog" element={<CatalogPage />} />
+            <Route path="/product/:slug" element={<ProductPage />} />
 
-          {/* სტუმრებისთვის */}
-          <Route
-            path="/login"
-            element={
-              <GuestOnly>
-                <LoginPage />
-              </GuestOnly>
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              <GuestOnly>
-                <RegisterPage />
-              </GuestOnly>
-            }
-          />
-          <Route
-            path="/forgot-password"
-            element={
-              <GuestOnly>
-                <ForgotPasswordPage />
-              </GuestOnly>
-            }
-          />
+            {/* სტუმრებისთვის */}
+            <Route
+              path="/login"
+              element={
+                <GuestOnly>
+                  <LoginPage />
+                </GuestOnly>
+              }
+            />
+            <Route
+              path="/register"
+              element={
+                <GuestOnly>
+                  <RegisterPage />
+                </GuestOnly>
+              }
+            />
+            <Route
+              path="/forgot-password"
+              element={
+                <GuestOnly>
+                  <ForgotPasswordPage />
+                </GuestOnly>
+              }
+            />
 
-          {/* დაცული: მხოლოდ შესულებისთვის */}
-          <Route
-            path="/home"
-            element={
-              <Protected>
-                <HomePage />
-              </Protected>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <Protected>
-                <ProfilePage />
-              </Protected>
-            }
-          />
+            {/* დაცული: მხოლოდ შესულებისთვის */}
+            <Route
+              path="/home"
+              element={
+                <Protected>
+                  <HomePage />
+                </Protected>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <Protected>
+                  <ProfilePage />
+                </Protected>
+              }
+            />
+            <Route
+              path="/cart"
+              element={
+                <Protected>
+                  <CartPage />
+                </Protected>
+              }
+            />
 
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-        <Footer />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+          <Footer />
+        </CartProvider>
       </AuthProvider>
     </BrowserRouter>
   );

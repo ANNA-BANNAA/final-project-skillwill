@@ -74,4 +74,9 @@ export const api = {
   products: (query, signal) =>
     request("/products?" + query, "GET", undefined, signal),
   product: (slug) => request("/products/" + slug),
+
+  cart: () => request("/cart"),
+  addToCart: (body) => request("/cart/items", "POST", body),
+  updateCartItem: (id, body) => request("/cart/items/" + id, "PATCH", body),
+  removeCartItem: (id) => request("/cart/items/" + id, "DELETE"),
 };
