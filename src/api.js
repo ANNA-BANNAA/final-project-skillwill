@@ -90,4 +90,5 @@ export const api = {
   resendCode: (id) => request("/orders/" + id + "/resend-code", "POST"),
   order: (id) => request("/orders/" + id),
   orders: () => request("/orders"),
+
 };

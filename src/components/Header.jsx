@@ -1,10 +1,13 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../useAuth";
 import { useCart } from "../useCart";
+import { useLang } from "../useLang";
+import { ThemeSwitcher } from "./ThemeSwitcher";
 
 export function Header() {
   const { status, user, signOut } = useAuth();
   const { cart } = useCart();
+  const { lang, setLang, t } = useLang();
   const qty = cart?.totalQty ?? 0;
 
   return (
@@ -16,32 +19,41 @@ export function Header() {
         Kitchen Shop
       </Link>
 
-      <nav className="header-links" aria-label="მთავარი მენიუ">
-        <nav className="header-links" aria-label="მთავარი მენიუ">
-          <Link to="/">Catalogue</Link>
-          <Link to="/about">About Us</Link>
-          <Link to="/blog">Blog</Link>
-          <Link to="/contact">Contact</Link>
-        </nav>
+      <nav className="header-links" aria-label={t("nav.main")}>
+        <Link to="/">{t("nav.catalog")}</Link>
+        <Link to="/about">{t("nav.about")}</Link>
+        <Link to="/blog">{t("nav.blog")}</Link>
+        <Link to="/contact">{t("nav.contact")}</Link>
       </nav>
 
       <nav className="header-nav">
+        <button
+          type="button"
+          className="lang-btn"
+          onClick={() => setLang(lang === "ka" ? "en" : "ka")}
+          aria-label={t("lang.switch")}
+        >
+          {lang === "ka" ? "EN" : "KA"}
+        </button>
+        
+        <ThemeSwitcher />
+
         {status === "authenticated" ? (
           <>
-            <Link to="/cart" aria-label={"კალათა, " + qty + " ნივთი"}>
+            <Link to="/cart" aria-label={t("cart.label", { count: qty })}>
               🛒
               {qty > 0 && <span className="badge">{qty}</span>}
             </Link>
-            <Link to="/orders">My Orders</Link>
+            <Link to="/orders">{t("nav.orders")}</Link>
             <Link to="/profile">{user?.name}</Link>
             <button className="header-btn" onClick={signOut}>
-              Sign Out
+              {t("nav.signOut")}
             </button>
           </>
         ) : status === "unauthenticated" ? (
           <>
-            <Link to="/login">Sign In</Link>
-            <Link to="/register">Sign Up</Link>
+            <Link to="/login">{t("nav.signIn")}</Link>
+            <Link to="/register">{t("nav.signUp")}</Link>
           </>
         ) : null}
       </nav>

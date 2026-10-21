@@ -2,23 +2,26 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { api } from "../api";
 import { CATEGORY } from "../config";
+import { useLang } from "../useLang";
 import { ProductCard } from "../components/ProductCard";
 import { Skeleton } from "../components/Skeleton";
 import { FilterPanel } from "../components/FilterPanel";
 import { Pagination } from "../components/Pagination";
 import { Button } from "../components/Button";
 
+// ლეიბლები თარგმანის ფაილშია, აქ მხოლოდ გასაღებებია
 const SORTS = [
-  { value: "newest", label: "უახლესი" },
-  { value: "oldest", label: "უძველესი" },
-  { value: "price-asc", label: "ფასი: ზრდადი" },
-  { value: "price-desc", label: "ფასი: კლებადი" },
-  { value: "rating-desc", label: "რეიტინგი" },
-  { value: "popular", label: "პოპულარული" },
-  { value: "title-asc", label: "სახელი: ა-ჰ" },
+  { value: "newest", key: "catalog.sort.newest" },
+  { value: "oldest", key: "catalog.sort.oldest" },
+  { value: "price-asc", key: "catalog.sort.priceAsc" },
+  { value: "price-desc", key: "catalog.sort.priceDesc" },
+  { value: "rating-desc", key: "catalog.sort.rating" },
+  { value: "popular", key: "catalog.sort.popular" },
+  { value: "title-asc", key: "catalog.sort.title" },
 ];
 
 export default function CatalogPage() {
+  const { lang, t } = useLang();
   const [searchParams, setSearchParams] = useSearchParams();
   const topRef = useRef(null);
   const [category, setCategory] = useState(null);
@@ -95,28 +98,32 @@ export default function CatalogPage() {
     setSearchParams({});
   }
 
+  // კატეგორიის სახელი: ინგლისურზე nameEn, სხვა შემთხვევაში name
+  const title =
+    (lang === "en" ? category?.nameEn : category?.name) ?? t("catalog.title");
+
   return (
     <main className="catalog" ref={topRef}>
-      <h1>{category?.name ?? "კატალოგი"}</h1>
+      <h1>{title}</h1>
 
       <div className="toolbar">
         <input
           className="input"
           type="search"
-          placeholder="ძებნა..."
-          aria-label="ძებნა"
+          placeholder={t("catalog.search")}
+          aria-label={t("catalog.search")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
         <select
           className="input"
-          aria-label="სორტირება"
+          aria-label={t("catalog.sort.label")}
           value={searchParams.get("sort") || "newest"}
           onChange={(e) => updateParam("sort", e.target.value)}
         >
           {SORTS.map((s) => (
             <option key={s.value} value={s.value}>
-              {s.label}
+              {t(s.key)}
             </option>
           ))}
         </select>
@@ -135,15 +142,17 @@ export default function CatalogPage() {
 
           {error && (
             <div className="state-box">
-              <p>პროდუქტები ვერ ჩაიტვირთა</p>
-              <Button onClick={() => setRetry(retry + 1)}>ხელახლა ცდა</Button>
+              <p>{t("catalog.loadError")}</p>
+              <Button onClick={() => setRetry(retry + 1)}>
+                {t("catalog.retry")}
+              </Button>
             </div>
           )}
 
           {!error && data && data.items.length === 0 && (
             <div className="state-box">
-              <p>ვერაფერი მოიძებნა</p>
-              <Button onClick={clearAll}>გასუფთავება</Button>
+              <p>{t("catalog.empty")}</p>
+              <Button onClick={clearAll}>{t("catalog.clearFilters")}</Button>
             </div>
           )}
 

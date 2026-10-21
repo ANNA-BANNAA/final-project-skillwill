@@ -41,7 +41,10 @@ export function ProductCard({ product }) {
       </Link>
 
       <div className="card-actions">
-        <AddToCartButton product={product} />
+        <AddToCartButton
+          productId={product.id}
+          disabled={product.inStock === false}
+        />
       </div>
     </div>
   );

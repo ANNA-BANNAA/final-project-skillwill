@@ -1,0 +1,60 @@
+{
+  "lang": { "switch": "Switch language to Georgian" },
+  
+  "theme": {
+  "label": "Theme",
+  "light": "Light theme",
+  "dark": "Dark theme",
+  "system": "Match system"
+},
+  "nav": {
+    "main": "Main menu",
+    "catalog": "Catalogue",
+    "about": "About us",
+    "blog": "Blog",
+    "contact": "Contact",
+    "cart": "Cart",
+    "orders": "My orders",
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "signOut": "Sign out"
+  },
+  "cart": {
+    "label_one": "Cart, {count} item",
+    "label_other": "Cart, {count} items",
+    "add": "ADD NOW"
+  },
+  "footer": {
+    "tagline": "Kitchen essentials for your home.",
+    "contact": "Contact",
+    "links": "Links",
+    "phone": "Phone",
+    "email": "Email",
+    "address": "12 Rustaveli Ave, Tbilisi",
+    "rights": "© 2026 Kitchen Shop. All rights reserved."
+  },
+  "catalog": {
+    "title": "Catalogue",
+    "search": "Search...",
+    "sort": {
+      "label": "Sort by",
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "priceAsc": "Price: low to high",
+      "priceDesc": "Price: high to low",
+      "rating": "Rating",
+      "popular": "Popular",
+      "title": "Name: A–Z"
+    },
+    "filters": { "title": "Filters", "clear": "Clear" },
+    "empty": "Nothing found",
+    "clearFilters": "Clear filters",
+    "retry": "Try again",
+    "showing": "Showing {from}–{to} of {total}",
+    "prev": "Previous",
+    "next": "Next",
+    "total_one": "{count} product",
+    "total_other": "{count} products"
+  },
+  "common": { "loading": "Loading..." }
+}

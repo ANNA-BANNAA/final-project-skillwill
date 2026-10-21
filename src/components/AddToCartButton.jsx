@@ -2,48 +2,49 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../useAuth";
 import { useCart } from "../useCart";
+import { useLang } from "../useLang";
 import { Button } from "./Button";
+import { Alert } from "./Alert";
 
-export function AddToCartButton({ product }) {
+// სერვერის კოდი → თარგმანის გასაღები
+const ERROR_KEYS = {
+  OUT_OF_STOCK: "cart.errors.outOfStock",
+  INSUFFICIENT_STOCK: "cart.errors.insufficientStock",
+  PRODUCT_NOT_FOUND: "cart.errors.notFound",
+};
+
+export function AddToCartButton({ productId, disabled }) {
   const { status } = useAuth();
-  const { add, busy } = useCart();
+  const { add } = useCart();
+  const { t } = useLang();
   const navigate = useNavigate();
   const location = useLocation();
-  const [message, setMessage] = useState("");
-  const [isError, setIsError] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [added, setAdded] = useState(false);
+  const [errorKey, setErrorKey] = useState("");
 
-  async function handleClick(e) {
-    e.preventDefault(); // ბარათი ბმულია, გადასვლა არ გვინდა
-
-    // შესული არ არის → /login, შესვლის შემდეგ უკან ბრუნდება
+  async function handleClick() {
+    // შესული არ არის → შესვლა, შემდეგ უკან ამავე გვერდზე
     if (status !== "authenticated") {
-      navigate("/login", { state: { from: location.pathname + location.search } });
+      navigate("/login", { state: { from: location.pathname } });
       return;
     }
-
-    const result = await add(product.id, 1);
-    if (result.ok) {
-      setIsError(false);
-      setMessage("დაემატა კალათაში");
-    } else {
-      const e2 = result.error;
-      setIsError(true);
-      if (e2.code === "OUT_OF_STOCK") setMessage("ამოწურულია");
-      else if (e2.code === "INSUFFICIENT_STOCK") setMessage("მარაგში არ არის საკმარისი რაოდენობა");
-      else if (e2.code === "PRODUCT_NOT_FOUND") setMessage("პროდუქტი აღარ არსებობს");
-      else setMessage("ვერ დაემატა, სცადეთ თავიდან");
-    }
-    setTimeout(() => setMessage(""), 2500);
+    setBusy(true);
+    setAdded(false);
+    setErrorKey("");
+    const result = await add(productId, 1);
+    setBusy(false);
+    if (result.ok) setAdded(true);
+    else setErrorKey(ERROR_KEYS[result.error?.code] || "cart.errors.generic");
   }
 
   return (
-    <div className="add-to-cart">
-      <Button type="button" fullWidth loading={busy} disabled={!product.inStock} onClick={handleClick}>
-        {product.inStock ? "კალათაში დამატება" : "ამოწურულია"}
+    <div>
+      <Button fullWidth loading={busy} disabled={disabled || busy} onClick={handleClick}>
+        {t("cart.add")}
       </Button>
-      {message && (
-        <p className={isError ? "field-error" : "in-stock"} role="status">{message}</p>
-      )}
+      {added && <Alert variant="success">{t("cart.added")}</Alert>}
+      {errorKey && <Alert variant="error">{t(errorKey)}</Alert>}
     </div>
   );
 }

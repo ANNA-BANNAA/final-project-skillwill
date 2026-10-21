@@ -24,6 +24,8 @@ import AboutPage from "./pages/AboutPage";
 import BlogPage from "./pages/BlogPage";
 import BlogPostPage from "./pages/BlogPostPage";
 import ContactPage from "./pages/ContactPage";
+import { LangProvider } from "./LangProvider";
+import { ThemeProvider } from "./ThemeProvider";
 import { Footer } from "./components/Footer";
 
 function Loader() {
@@ -58,101 +60,105 @@ function GuestOnly({ children }) {
 export default function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <CartProvider>
-          <Header />
-          <Routes>
-            <Route path="/about" element={<AboutPage />} />
-            <Route path="/blog" element={<BlogPage />} />
-            <Route path="/blog/:id" element={<BlogPostPage />} />
-            <Route path="/contact" element={<ContactPage />} />
-            {/* ღია გვერდები: ყველას შეუძლია ნახოს */}
-            <Route path="/" element={<CatalogPage />} />
-            <Route path="/catalog" element={<CatalogPage />} />
-            <Route path="/product/:slug" element={<ProductPage />} />
+      <ThemeProvider>
+        <LangProvider>
+          <AuthProvider>
+            <CartProvider>
+              <Header />
+              <Routes>
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/blog" element={<BlogPage />} />
+                <Route path="/blog/:id" element={<BlogPostPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+                {/* ღია გვერდები: ყველას შეუძლია ნახოს */}
+                <Route path="/" element={<CatalogPage />} />
+                <Route path="/catalog" element={<CatalogPage />} />
+                <Route path="/product/:slug" element={<ProductPage />} />
 
-            {/* სტუმრებისთვის */}
-            <Route
-              path="/login"
-              element={
-                <GuestOnly>
-                  <LoginPage />
-                </GuestOnly>
-              }
-            />
-            <Route
-              path="/register"
-              element={
-                <GuestOnly>
-                  <RegisterPage />
-                </GuestOnly>
-              }
-            />
-            <Route
-              path="/forgot-password"
-              element={
-                <GuestOnly>
-                  <ForgotPasswordPage />
-                </GuestOnly>
-              }
-            />
+                {/* სტუმრებისთვის */}
+                <Route
+                  path="/login"
+                  element={
+                    <GuestOnly>
+                      <LoginPage />
+                    </GuestOnly>
+                  }
+                />
+                <Route
+                  path="/register"
+                  element={
+                    <GuestOnly>
+                      <RegisterPage />
+                    </GuestOnly>
+                  }
+                />
+                <Route
+                  path="/forgot-password"
+                  element={
+                    <GuestOnly>
+                      <ForgotPasswordPage />
+                    </GuestOnly>
+                  }
+                />
 
-            {/* დაცული: მხოლოდ შესულებისთვის */}
-          
-            <Route
-              path="/profile"
-              element={
-                <Protected>
-                  <ProfilePage />
-                </Protected>
-              }
-            />
-            <Route
-              path="/cart"
-              element={
-                <Protected>
-                  <CartPage />
-                </Protected>
-              }
-            />
-            <Route
-              path="/checkout"
-              element={
-                <Protected>
-                  <CheckoutPage />
-                </Protected>
-              }
-            />
-            <Route
-              path="/checkout/confirm/:orderId"
-              element={
-                <Protected>
-                  <ConfirmPage />
-                </Protected>
-              }
-            />
-            <Route
-              path="/orders/:id"
-              element={
-                <Protected>
-                  <OrderPage />
-                </Protected>
-              }
-            />
-            <Route
-              path="/orders"
-              element={
-                <Protected>
-                  <OrdersPage />
-                </Protected>
-              }
-            />
+                {/* დაცული: მხოლოდ შესულებისთვის */}
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-          <Footer />
-        </CartProvider>
-      </AuthProvider>
+                <Route
+                  path="/profile"
+                  element={
+                    <Protected>
+                      <ProfilePage />
+                    </Protected>
+                  }
+                />
+                <Route
+                  path="/cart"
+                  element={
+                    <Protected>
+                      <CartPage />
+                    </Protected>
+                  }
+                />
+                <Route
+                  path="/checkout"
+                  element={
+                    <Protected>
+                      <CheckoutPage />
+                    </Protected>
+                  }
+                />
+                <Route
+                  path="/checkout/confirm/:orderId"
+                  element={
+                    <Protected>
+                      <ConfirmPage />
+                    </Protected>
+                  }
+                />
+                <Route
+                  path="/orders/:id"
+                  element={
+                    <Protected>
+                      <OrderPage />
+                    </Protected>
+                  }
+                />
+                <Route
+                  path="/orders"
+                  element={
+                    <Protected>
+                      <OrdersPage />
+                    </Protected>
+                  }
+                />
+
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+              <Footer />
+            </CartProvider>
+          </AuthProvider>
+        </LangProvider>
+      </ThemeProvider>
     </BrowserRouter>
   );
 }
