@@ -25,7 +25,6 @@ import BlogPage from "./pages/BlogPage";
 import BlogPostPage from "./pages/BlogPostPage";
 import ContactPage from "./pages/ContactPage";
 import { LangProvider } from "./LangProvider";
-import { ThemeProvider } from "./ThemeProvider";
 import { Footer } from "./components/Footer";
 
 function Loader() {
@@ -60,7 +59,6 @@ function GuestOnly({ children }) {
 export default function App() {
   return (
     <BrowserRouter>
-      <ThemeProvider>
         <LangProvider>
           <AuthProvider>
             <CartProvider>
@@ -158,7 +156,6 @@ export default function App() {
             </CartProvider>
           </AuthProvider>
         </LangProvider>
-      </ThemeProvider>
     </BrowserRouter>
   );
 }

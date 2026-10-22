@@ -12,7 +12,7 @@ export function Footer() {
         </div>
         <div className="footer-col">
           <h3 className="footer-title">{t("footer.contact")}</h3>
-          <p>{t("footer.phone")}: <a href="tel:+995555123456">+995 555 12 34 56</a></p>
+          <p>{t("footer.phone")}: <a href="tel:+995555123456">+995 555 55 55 55</a></p>
           <p>{t("footer.email")}: <a href="mailto:info@kitchenshop.ge">info@kitchenshop.ge</a></p>
           <p>{t("footer.address")}</p>
         </div>

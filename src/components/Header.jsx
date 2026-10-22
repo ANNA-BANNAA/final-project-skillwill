@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useAuth } from "../useAuth";
 import { useCart } from "../useCart";
 import { useLang } from "../useLang";
-import { ThemeSwitcher } from "./ThemeSwitcher";
+
 
 export function Header() {
   const { status, user, signOut } = useAuth();
@@ -35,8 +35,7 @@ export function Header() {
         >
           {lang === "ka" ? "EN" : "KA"}
         </button>
-        
-        <ThemeSwitcher />
+
 
         {status === "authenticated" ? (
           <>

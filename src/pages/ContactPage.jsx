@@ -33,7 +33,7 @@ export default function ContactPage() {
       <div className="contact-layout">
         <section className="pay-section">
           <h2>დაგვიკავშირდით</h2>
-          <p>ტელეფონი: <a href="tel:+995555123456">+995 555 12 34 56</a></p>
+          <p>ტელეფონი: <a href="tel:+99555555555">+995 555 55 55 55</a></p>
           <p>ელფოსტა: <a href="mailto:info@kitchenshop.ge">info@kitchenshop.ge</a></p>
           <p>მისამართი: თბილისი, რუსთაველის გამზ. 12</p>
           <p>სამუშაო საათები: ორშაბათი–შაბათი, 10:00–19:00</p>

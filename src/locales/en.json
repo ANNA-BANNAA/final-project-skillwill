@@ -1,12 +1,5 @@
 {
   "lang": { "switch": "Switch language to Georgian" },
-  
-  "theme": {
-  "label": "Theme",
-  "light": "Light theme",
-  "dark": "Dark theme",
-  "system": "Match system"
-},
   "nav": {
     "main": "Main menu",
     "catalog": "Catalogue",

@@ -534,16 +534,37 @@ textarea.input {
 
 .footer {
     margin-top: 48px;
-    padding: 32px var(--space) 16px;
-    background: var(--footer-bg);
-    color: var(--footer-text);
-    text-align: left;
+    padding: 40px var(--space) 20px;
+    background: #1f2937;;
+    color: white;
+    
+
+}
+
+.footer-inner {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 32px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.footer-col p {
+    margin: 0;
 }
 
 .footer-title {
-    margin: 0 0 8px;
+    margin: 0 0 6px;
     color: var(--footer-title);
-    font-size: 1rem;
+    font-size: 1.05rem;
+    font-weight: 700;
 }
 
 .footer a {
@@ -557,12 +578,17 @@ textarea.input {
 }
 
 .footer-copy {
-    margin-top: 24px !important;
+    width: 100%;
+    max-width: 1200px;
+    margin: 32px auto 0;
     padding-top: 16px;
     border-top: 1px solid var(--footer-border);
-    text-align: center;
     color: var(--footer-muted);
+    font-size: 0.9rem;
+    text-align: center;
 }
+
+
 
 .profile-card {
     max-width: 520px;
@@ -810,32 +836,6 @@ textarea.input {
     text-decoration: underline;
 }
 
-.card-image,
-.product-main-image,
-.thumb img,
-.cart-item img {
-    background: var(--img-bg);
-}
-
-.theme-switch {
-    display: flex;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    overflow: hidden;
-}
-
-.theme-btn {
-    padding: 6px 8px;
-    border: 0;
-    background: var(--surface);
-    font-size: 1rem;
-    cursor: pointer;
-}
-
-.theme-btn-active {
-    background: var(--primary-soft);
-}
-
 
 .product-main-image {
     aspect-ratio: 1;
@@ -936,6 +936,7 @@ textarea.input {
 
     .footer-inner {
         grid-template-columns: 1fr;
+        gap: 24px;
     }
 
     .about-grid,
