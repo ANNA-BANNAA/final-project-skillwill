@@ -43,7 +43,7 @@ export function AddToCartButton({ productId, disabled }) {
       <Button fullWidth loading={busy} disabled={disabled || busy} onClick={handleClick}>
         {t("cart.add")}
       </Button>
-      {added && <Alert variant="success">{t("cart.added")}</Alert>}
+      {added && <Alert variant="success">დამატებულია</Alert>}
       {errorKey && <Alert variant="error">{t(errorKey)}</Alert>}
     </div>
   );

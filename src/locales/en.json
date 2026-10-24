@@ -15,7 +15,7 @@
   "cart": {
     "label_one": "Cart, {count} item",
     "label_other": "Cart, {count} items",
-    "add": "ADD NOW"
+    "add": "Add to Cart"
   },
   "footer": {
     "tagline": "Kitchen essentials for your home.",

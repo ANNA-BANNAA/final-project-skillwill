@@ -52,7 +52,8 @@ async function request(path, method = "GET", body, signal) {
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
-    if (res.status === 401 && data.code === "TOKEN_EXPIRED" && onTokenExpired) {
+    // 👈 შევასწორეთ: ნებისმიერ 401 სტატუსზე გამოვიძახოთ onTokenExpired (თუ განსაზღვრულია)
+    if (res.status === 401 && onTokenExpired) {
       onTokenExpired();
     }
     throw new ApiError(res.status, data);
@@ -76,13 +77,13 @@ export const api = {
     request("/products?" + query, "GET", undefined, signal),
   product: (slug) => request("/products/" + slug),
 
-  //კალათა
+  // კალათა
   cart: () => request("/cart"),
   addToCart: (body) => request("/cart/items", "POST", body),
   updateCartItem: (id, body) => request("/cart/items/" + id, "PATCH", body),
   removeCartItem: (id) => request("/cart/items/" + id, "DELETE"),
 
-  //ჩექაუთი
+  // ჩექაუთი
   checkout: () => request("/checkout"),
   createOrder: (body) => request("/orders", "POST", body),
   confirmOrder: (id, code) =>
@@ -90,5 +91,4 @@ export const api = {
   resendCode: (id) => request("/orders/" + id + "/resend-code", "POST"),
   order: (id) => request("/orders/" + id),
   orders: () => request("/orders"),
-
 };
