@@ -113,7 +113,7 @@ export default function CartPage() {
                 disabled={busy}
                 onClick={() => removeItem(item)}
               >
-                🗑
+                ❌
               </button>
             </li>
           );

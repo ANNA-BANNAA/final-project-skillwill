@@ -1,35 +1,35 @@
 import { z } from "zod";
 
-// ყველგან ტექსტის ნაცვლად თარგმანის გასაღებია (locales/*.json → "errors")
+// ელ.ფოსტის წესები
 const email = z
   .string()
-  .min(1, "errors.email.required")
-  .email("errors.email.invalid");
+  .min(1, "ელ.ფოსტის მითითება სავალდებულოა")
+  .email("ელ.ფოსტის ფორმატი არასწორია");
 
 // პაროლის წესები (რეგისტრაცია და ახალი პაროლი)
 const strongPassword = z
   .string()
-  .min(8, "errors.password.min")
-  .regex(/\p{L}/u, "errors.password.letter")
-  .regex(/\d/, "errors.password.digit");
+  .min(8, "პაროლი უნდა შეიცავდეს მინიმუმ 8 სიმბოლოს")
+  .regex(/\p{L}/u, "პაროლი უნდა შეიცავდეს მინიმუმ ერთ ასოს")
+  .regex(/\d/, "პაროლი უნდა შეიცავდეს მინიმუმ ერთ ციფრს");
 
 // შესვლა: პაროლზე მხოლოდ "ცარიელი არ უნდა იყოს"
 export const loginSchema = z.object({
   email: email,
-  password: z.string().min(1, "errors.password.required"),
+  password: z.string().min(1, "პაროლის მითითება სავალდებულოა"),
 });
 
 // რეგისტრაცია
 export const registerSchema = z
   .object({
-    name: z.string().min(2, "errors.name.min"),
+    name: z.string().min(2, "სახელი უნდა შეიცავდეს მინიმუმ 2 სიმბოლოს"),
     email: email,
     password: strongPassword,
-    confirmPassword: z.string().min(1, "errors.confirm.required"),
+    confirmPassword: z.string().min(1, "პაროლის გამეორება სავალდებულოა"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],
-    message: "errors.confirm.mismatch",
+    message: "პაროლები არ ემთხვევა ერთმანეთს",
   });
 
 // აღდგენა, ბიჯი 1
@@ -37,103 +37,89 @@ export const emailSchema = z.object({ email: email });
 
 // აღდგენა, ბიჯი 2
 export const codeSchema = z.object({
-  code: z.string().min(1, "errors.code.required"),
+  code: z.string().min(1, "კოდის მითითება სავალდებულოა"),
 });
 
 // აღდგენა, ბიჯი 3
 export const newPasswordSchema = z
   .object({
     password: strongPassword,
-    confirmPassword: z.string().min(1, "errors.confirm.required"),
+    confirmPassword: z.string().min(1, "პაროლის გამეორება სავალდებულოა"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],
-    message: "errors.confirm.mismatch",
+    message: "პაროლები არ ემთხვევა ერთმანეთს",
   });
 
-// პროფილი: ცარიელი ველი დაშვებულია (ასუფთავებს), მაგრამ თუ შეავსე, წესები მოქმედებს
+// პროფილი: ცარიელი ველი დაშვებულია, მაგრამ თუ შეავსე, წესები მოქმედებს
 const optional = (rule) => z.union([z.literal(""), rule]);
 
 export const profileSchema = z
   .object({
-    name: z.string().min(2, "errors.name.min"),
+    name: z.string().min(2, "სახელი უნდა შეიცავდეს მინიმუმ 2 სიმბოლოს"),
     email: email,
     phone: optional(
       z
         .string()
-        .min(9, "errors.phone.min")
-        .max(20, "errors.phone.max")
-        .regex(/^\+?[\d\s()-]+$/, "errors.phone.format"),
+        .min(9, "ტელეფონის ნომერი უნდა იყოს მინიმუმ 9 ციფრი")
+        .max(20, "ტელეფონის ნომერი არ უნდა აღემატებოდეს 20 სიმბოლოს")
+        .regex(/^\+?[\d\s()-]+$/, "მიუთითეთ ტელეფონის სწორი ფორმატი"),
     ),
-    city: optional(z.string().min(2, "errors.city.min")),
-    address: optional(z.string().min(5, "errors.address.min")),
+    city: optional(
+      z.string().min(2, "ქალაქი უნდა შეიცავდეს მინიმუმ 2 სიმბოლოს"),
+    ),
+    address: optional(
+      z.string().min(5, "მისამართი უნდა შეიცავდეს მინიმუმ 5 სიმბოლოს"),
+    ),
     newPassword: optional(strongPassword),
     confirmNewPassword: z.string(),
-    currentPassword: z.string().min(1, "errors.currentPassword.required"),
+    currentPassword: z
+      .string()
+      .min(1, "მიმდინარე პაროლის მითითება სავალდებულოა"),
   })
   .refine((d) => d.newPassword === d.confirmNewPassword, {
     path: ["confirmNewPassword"],
-    message: "errors.confirm.mismatch",
+    message: "პაროლები არ ემთხვევა ერთმანეთს",
   });
-
-// ბარათის ნომრის შემოწმება (Luhn)
-function luhn(num) {
-  let sum = 0;
-  let double = false;
-  for (let i = num.length - 1; i >= 0; i--) {
-    let n = Number(num[i]);
-    if (double) {
-      n *= 2;
-      if (n > 9) n -= 9;
-    }
-    sum += n;
-    double = !double;
-  }
-  return sum % 10 === 0;
-}
-
-// ვადა MM/YY, არა გასული
-function notExpired(value) {
-  const [mm, yy] = value.split("/");
-  const month = Number(mm);
-  const year = 2000 + Number(yy);
-  if (month < 1 || month > 12) return false;
-  const now = new Date();
-  return (
-    year > now.getFullYear() ||
-    (year === now.getFullYear() && month >= now.getMonth() + 1)
-  );
-}
-
-const digits = (v) => v.replace(/\s/g, "");
 
 export const checkoutSchema = z.object({
   shipping: z.object({
-    fullName: z.string().trim().min(2, "errors.name.min"),
+    fullName: z
+      .string()
+      .trim()
+      .min(2, "სახელი და გვარი უნდა შეიცავდეს მინიმუმ 2 სიმბოლოს"),
     phone: z
       .string()
-      .min(9, "errors.phone.min")
-      .max(20, "errors.phone.max")
-      .regex(/^\+?[\d\s()-]+$/, "errors.phone.format"),
-    city: z.string().trim().min(1, "errors.city.required"),
-    address: z.string().trim().min(5, "errors.address.min"),
+      .min(9, "ტელეფონის ნომერი უნდა იყოს მინიმუმ 9 ციფრი")
+      .max(20, "ტელეფონის ნომერი არ უნდა აღემატებოდეს 20 სიმბოლოს")
+      .regex(/^\+?[\d\s()-]+$/, "მიუთითეთ ტელეფონის სწორი ფორმატი"),
+    city: z.string().trim().min(1, "ქალაქის მითითება სავალდებულოა"),
+    address: z
+      .string()
+      .trim()
+      .min(5, "მისამართი უნდა შეიცავდეს მინიმუმ 5 სიმბოლოს"),
   }),
   card: z.object({
     number: z
       .string()
-      .refine((v) => /^\d{13,19}$/.test(digits(v)), "errors.card.numberLength")
-      .refine((v) => luhn(digits(v)), "errors.card.numberInvalid"),
-    holder: z.string().trim().min(2, "errors.card.holder"),
-    expiry: z
-      .string()
-      .regex(/^\d{2}\/\d{2}$/, "errors.card.expiryFormat")
-      .refine(notExpired, "errors.card.expired"),
-    cvc: z.string().regex(/^\d{3,4}$/, "errors.card.cvc"),
+      .transform((val) => val.replace(/\s/g, ""))
+      .pipe(
+        z
+          .string()
+          .min(13, "ბარათის ნომერი არასწორია")
+          .max(19, "ბარათის ნომერი არასწორია"),
+      ),
+    holder: z.string().trim().min(2, "მიუთითეთ მფლობელი"),
+    expiry: z.string().min(4, "ვადა არასწორია"),
+    cvc: z.string().min(3, "CVC არასწორია"),
   }),
 });
 
 export const contactSchema = z.object({
-  name: z.string().trim().min(2, "errors.name.min"),
+  name: z.string().trim().min(2, "სახელი უნდა შეიცავდეს მინიმუმ 2 სიმბოლოს"),
   email: email,
-  message: z.string().trim().min(10, "errors.message.min"),
+  message: z
+    .string()
+    .trim()
+    .min(10, "შეტყობინება უნდა შეიცავდეს მინიმუმ 10 სიმბოლოს"),
 });

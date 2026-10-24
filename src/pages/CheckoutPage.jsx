@@ -1,36 +1,25 @@
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "react-router-dom";
+
 import { checkoutSchema } from "../schemas";
 import { api } from "../api";
 import { FormField } from "../components/FormField";
 import { Button } from "../components/Button";
 import { Alert } from "../components/Alert";
 
-const EMPTY_CARD = { number: "", holder: "", expiry: "", cvc: "" };
-
-// 4242424242424242 → 4242 4242 4242 4242
-function formatNumber(value) {
-  return value
-    .replace(/\D/g, "")
-    .slice(0, 19)
-    .replace(/(.{4})/g, "$1 ")
-    .trim();
-}
-
-// 1228 → 12/28 ("/" ჩნდება ორი ციფრის შემდეგ)
-function formatExpiry(value, deleting) {
-  const d = value.replace(/\D/g, "").slice(0, 4);
-  if (d.length > 2 || (d.length === 2 && !deleting))
-    return d.slice(0, 2) + "/" + d.slice(2);
-  return d;
-}
+const EMPTY_CARD = {
+  number: "",
+  holder: "",
+  expiry: "",
+  cvc: "",
+};
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
-  const [data, setData] = useState(null); // GET /checkout
+
+  const [data, setData] = useState(null);
   const [loadError, setLoadError] = useState(false);
   const [retry, setRetry] = useState(0);
   const [selectedId, setSelectedId] = useState(null);
@@ -44,26 +33,36 @@ export default function CheckoutPage() {
     reset,
     setValue,
     setError,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm({
     resolver: zodResolver(checkoutSchema),
+    mode: "onSubmit",
     defaultValues: {
-      shipping: { fullName: "", phone: "", city: "", address: "" },
+      shipping: {
+        fullName: "",
+        phone: "",
+        city: "",
+        address: "",
+      },
       card: EMPTY_CARD,
     },
   });
 
-  // ჩექაუთის მონაცემები და ნაგულისხმევი მისამართი
   useEffect(() => {
+    let cancelled = false;
+
     api
       .checkout()
       .then((res) => {
+        if (cancelled) return;
+
         if (!res.items || res.items.length === 0) {
           navigate("/cart", { replace: true });
           return;
         }
+
         setData(res);
+
         reset({
           shipping: {
             fullName: res.shipping?.fullName || "",
@@ -74,16 +73,30 @@ export default function CheckoutPage() {
           card: EMPTY_CARD,
         });
       })
-      .catch(() => setLoadError(true));
-  }, [reset, navigate, retry]);
+      .catch(() => {
+        if (!cancelled) {
+          setLoadError(true);
+        }
+      });
 
-  // შენახული მისამართის არჩევა → ფორმის ველები ივსება
-  function pickAddress(a) {
-    setSelectedId(a.id);
-    setValue("shipping.fullName", a.fullName || "");
-    setValue("shipping.phone", a.phone || "");
-    setValue("shipping.city", a.city || "");
-    setValue("shipping.address", a.address || "");
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate, retry, reset]);
+
+  function pickAddress(address) {
+    setSelectedId(address.id);
+
+    const options = {
+      shouldValidate: true,
+      shouldDirty: true,
+      shouldTouch: true,
+    };
+
+    setValue("shipping.fullName", address.fullName || "", options);
+    setValue("shipping.phone", address.phone || "", options);
+    setValue("shipping.city", address.city || "", options);
+    setValue("shipping.address", address.address || "", options);
   }
 
   async function onSubmit(values) {
@@ -93,27 +106,32 @@ export default function CheckoutPage() {
 
     const body = {
       shipping: values.shipping,
-      card: { ...values.card, number: values.card.number.replace(/\s/g, "") },
+      card: {
+        ...values.card,
+        number: values.card.number.replace(/\s/g, ""),
+      },
     };
 
     try {
       const res = await api.createOrder(body);
-      setValue("card", EMPTY_CARD); // ბარათი მეხსიერებიდან ვშლით
+
+      setValue("card", EMPTY_CARD);
+
       navigate("/checkout/confirm/" + res.orderId);
     } catch (e) {
       if (e.code === "CARD_DECLINED") {
         setValue("card", EMPTY_CARD);
         setCardBanner("ბარათი უარყოფილია, სცადე სხვა ბარათი");
       } else if (e.status === 422 && e.errors) {
-        Object.entries(e.errors).forEach(([key, message]) =>
-          setError(key, { message }),
-        );
+        Object.entries(e.errors).forEach(([key, message]) => {
+          setError(key, { message });
+        });
       } else if (e.code === "CART_EMPTY") {
         navigate("/cart", { replace: true });
       } else if (e.code === "INSUFFICIENT_STOCK") {
-        setStockItems(e.body.items || []);
+        setStockItems(e.body?.items || []);
       } else if (e.code === "NETWORK_ERROR") {
-        setBanner(e.message);
+        setBanner(e.message || "ქსელთან დაკავშირება ვერ მოხერხდა");
       } else {
         setBanner("დაფიქსირდა შეცდომა, სცადეთ თავიდან");
       }
@@ -125,10 +143,11 @@ export default function CheckoutPage() {
       <main className="catalog">
         <div className="state-box">
           <p>ჩექაუთი ვერ ჩაიტვირთა</p>
+
           <Button
             onClick={() => {
               setLoadError(false);
-              setRetry(retry + 1);
+              setRetry((current) => current + 1);
             }}
           >
             ხელახლა ცდა
@@ -153,20 +172,23 @@ export default function CheckoutPage() {
   return (
     <main className="catalog">
       <h1>ჩექაუთი</h1>
-      <pre>{JSON.stringify(watch("shipping"), null, 2)}</pre>
 
       <div className="checkout">
-        <form className="form" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form className="form" onSubmit={handleSubmit(onSubmit)}>
           {banner && <Alert variant="error">{banner}</Alert>}
 
           {stockItems && (
             <Alert variant="error">
               ზოგი პროდუქტი აღარ არის საკმარისი რაოდენობით.
+
               <ul>
-                {stockItems.map((item, i) => (
-                  <li key={i}>{item.title || item.productId}</li>
+                {stockItems.map((item, index) => (
+                  <li key={item.productId || index}>
+                    {item.title || item.productId}
+                  </li>
                 ))}
               </ul>
+
               <Link to="/cart">კალათაში დაბრუნება</Link>
             </Alert>
           )}
@@ -178,15 +200,17 @@ export default function CheckoutPage() {
             {data.addresses && data.addresses.length > 1 && (
               <fieldset className="filter">
                 <legend>შენახული მისამართები</legend>
-                {data.addresses.map((a) => (
-                  <label className="filter-option" key={a.id}>
+
+                {data.addresses.map((address) => (
+                  <label className="filter-option" key={address.id}>
                     <input
                       type="radio"
                       name="saved-address"
-                      checked={selectedId === a.id}
-                      onChange={() => pickAddress(a)}
+                      checked={selectedId === address.id}
+                      onChange={() => pickAddress(address)}
                     />
-                    {a.city}, {a.address}
+
+                    {address.city}, {address.address}
                   </label>
                 ))}
               </fieldset>
@@ -199,6 +223,7 @@ export default function CheckoutPage() {
               error={errors.shipping?.fullName?.message}
               {...register("shipping.fullName")}
             />
+
             <FormField
               label="ტელეფონი"
               id="phone"
@@ -208,6 +233,7 @@ export default function CheckoutPage() {
               error={errors.shipping?.phone?.message}
               {...register("shipping.phone")}
             />
+
             <FormField
               label="ქალაქი"
               id="city"
@@ -215,6 +241,7 @@ export default function CheckoutPage() {
               error={errors.shipping?.city?.message}
               {...register("shipping.city")}
             />
+
             <FormField
               label="მისამართი"
               id="address"
@@ -227,20 +254,21 @@ export default function CheckoutPage() {
           {/* ბარათი */}
           <section className="pay-section">
             <h2>ბარათი</h2>
-            {cardBanner && <Alert variant="error">{cardBanner}</Alert>}
+
+            {cardBanner && (
+              <Alert variant="error">{cardBanner}</Alert>
+            )}
 
             <FormField
               label="ბარათის ნომერი"
               id="cardNumber"
               inputMode="numeric"
               autoComplete="cc-number"
-              placeholder="4242 4242 4242 4242"
+              placeholder="4242424242424242"
               error={errors.card?.number?.message}
-              {...register("card.number", {
-                onChange: (e) =>
-                  setValue("card.number", formatNumber(e.target.value)),
-              })}
+              {...register("card.number")}
             />
+
             <FormField
               label="ბარათის მფლობელი"
               id="cardHolder"
@@ -248,24 +276,17 @@ export default function CheckoutPage() {
               error={errors.card?.holder?.message}
               {...register("card.holder")}
             />
+
             <FormField
               label="ვადა (MM/YY)"
               id="cardExpiry"
-              inputMode="numeric"
+              inputMode="text"
               autoComplete="cc-exp"
               placeholder="MM/YY"
               error={errors.card?.expiry?.message}
-              {...register("card.expiry", {
-                onChange: (e) => {
-                  const deleting =
-                    e.nativeEvent?.inputType === "deleteContentBackward";
-                  setValue(
-                    "card.expiry",
-                    formatExpiry(e.target.value, deleting),
-                  );
-                },
-              })}
+              {...register("card.expiry")}
             />
+
             <FormField
               label="CVC"
               id="cardCvc"
@@ -287,32 +308,42 @@ export default function CheckoutPage() {
           </Button>
         </form>
 
-        {/* შეჯამება */}
+        {/* შეკვეთის შეჯამება */}
         <aside className="pay-section summary">
           <h2>თქვენი შეკვეთა</h2>
+
           <ul className="summary-list">
             {data.items.map((item) => (
               <li key={item.id}>
                 <span>
                   {item.product?.title} × {item.qty}
                 </span>
+
                 <span>{item.lineTotal} ₾</span>
               </li>
             ))}
           </ul>
+
           <p className="summary-row">
             <span>ჯამი</span>
             <span>{data.subtotal} ₾</span>
           </p>
+
           <p className="summary-row">
             <span>მიწოდება</span>
             <span>
-              {data.shippingFee === 0 ? "უფასო" : data.shippingFee + " ₾"}
+              {data.shippingFee === 0
+                ? "უფასო"
+                : `${data.shippingFee} ₾`}
             </span>
           </p>
+
           {missing > 0 && data.shippingFee > 0 && (
-            <p className="profile-hint">კიდევ {missing} ₾ და მიწოდება უფასოა</p>
+            <p className="profile-hint">
+              კიდევ {missing} ₾ და მიწოდება უფასოა
+            </p>
           )}
+
           <p className="summary-row summary-total">
             <span>სულ</span>
             <span>{data.total} ₾</span>
