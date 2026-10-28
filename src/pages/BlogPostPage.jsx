@@ -1,9 +1,11 @@
 import { Link, useParams } from "react-router-dom";
 import { POSTS } from "../blogPost";
+import { usePageTitle } from "../usePageTitle";
 
 export default function BlogPostPage() {
   const { id } = useParams();
   const post = POSTS.find((p) => p.id === id);
+  usePageTitle(post?.title); // return-მდე, რომ ჰუკი ყოველთვის გამოიძახებოდეს
 
   if (!post) {
     return (

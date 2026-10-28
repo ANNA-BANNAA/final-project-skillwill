@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useLang } from "../useLang";
+import { usePageTitle } from "../usePageTitle";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { contactSchema } from "../schemas";
 import { FormField } from "../components/FormField";
@@ -7,6 +9,8 @@ import { Button } from "../components/Button";
 import { Alert } from "../components/Alert";
 
 export default function ContactPage() {
+  const { t } = useLang();
+  usePageTitle(t("nav.contact"));
   const [sent, setSent] = useState(false);
   const {
     register,
@@ -33,21 +37,45 @@ export default function ContactPage() {
       <div className="contact-layout">
         <section className="pay-section">
           <h2>დაგვიკავშირდით</h2>
-          <p>ტელეფონი: <a href="tel:+99555555555">+995 555 55 55 55</a></p>
-          <p>ელფოსტა: <a href="mailto:info@kitchenshop.ge">info@kitchenshop.ge</a></p>
+          <p>
+            ტელეფონი: <a href="tel:+99555555555">+995 555 55 55 55</a>
+          </p>
+          <p>
+            ელფოსტა:{" "}
+            <a href="mailto:info@kitchenshop.ge">info@kitchenshop.ge</a>
+          </p>
           <p>მისამართი: თბილისი, რუსთაველის გამზ. 12</p>
           <p>სამუშაო საათები: ორშაბათი–შაბათი, 10:00–19:00</p>
         </section>
 
-        <form className="pay-section form" onSubmit={handleSubmit(onSubmit)} noValidate>
+        <form
+          className="pay-section form"
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
+        >
           <h2>მოგვწერეთ</h2>
-          {sent && <Alert variant="success">გმადლობთ! შეტყობინება მივიღეთ.</Alert>}
-          <FormField label="სახელი" id="contactName" autoComplete="name"
-            error={errors.name?.message} {...register("name")} />
-          <FormField label="ელფოსტა" id="contactEmail" type="email" autoComplete="email"
-            error={errors.email?.message} {...register("email")} />
+          {sent && (
+            <Alert variant="success">გმადლობთ! შეტყობინება მივიღეთ.</Alert>
+          )}
+          <FormField
+            label="სახელი"
+            id="contactName"
+            autoComplete="name"
+            error={errors.name?.message}
+            {...register("name")}
+          />
+          <FormField
+            label="ელფოსტა"
+            id="contactEmail"
+            type="email"
+            autoComplete="email"
+            error={errors.email?.message}
+            {...register("email")}
+          />
           <div className="field">
-            <label htmlFor="contactMessage" className="field-label">შეტყობინება</label>
+            <label htmlFor="contactMessage" className="field-label">
+              შეტყობინება
+            </label>
             <textarea
               id="contactMessage"
               className="input"
@@ -55,9 +83,13 @@ export default function ContactPage() {
               aria-invalid={errors.message ? "true" : "false"}
               {...register("message")}
             />
-            {errors.message && <p className="field-error">{errors.message.message}</p>}
+            {errors.message && (
+              <p className="field-error">{errors.message.message}</p>
+            )}
           </div>
-          <Button type="submit" fullWidth loading={isSubmitting}>გაგზავნა</Button>
+          <Button type="submit" fullWidth loading={isSubmitting}>
+            გაგზავნა
+          </Button>
         </form>
       </div>
     </main>

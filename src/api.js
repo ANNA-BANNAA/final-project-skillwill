@@ -24,19 +24,30 @@ export class ApiError extends Error {
   }
 }
 
+// ამ მოთხოვნებზე ტოკენს არ ვაგზავნით: ეს ავტორიზაციამდე მოთხოვნებია
+const NO_TOKEN_PATHS = [
+  "/auth/login",
+  "/auth/register",
+  "/auth/forgot-password",
+  "/auth/verify-reset-code",
+  "/auth/reset-password",
+];
+
 // ერთი ფუნქცია ყველა მოთხოვნისთვის
 async function request(path, method = "GET", body, signal) {
   const token = tokenStorage.get();
+  const sendToken = Boolean(token) && !NO_TOKEN_PATHS.includes(path);
+
   const headers = {};
-  if (body) headers["Content-Type"] = "application/json";
-  if (token) headers["Authorization"] = "Bearer " + token;
+  if (body !== undefined) headers["Content-Type"] = "application/json";
+  if (sendToken) headers["Authorization"] = "Bearer " + token;
 
   let res;
   try {
     res = await fetch(BASE_URL + path, {
       method: method,
       headers: headers,
-      body: body ? JSON.stringify(body) : undefined,
+      body: body !== undefined ? JSON.stringify(body) : undefined,
       signal: signal,
     });
   } catch (err) {
@@ -49,11 +60,16 @@ async function request(path, method = "GET", body, signal) {
 
   if (res.status === 204) return null;
 
-  const data = await res.json().catch(() => ({}));
+  // პასუხი ყოველთვის JSON არ არის (მაგ. Render-ის 502 აბრუნებს HTML-ს)
+  const isJson = (res.headers.get("content-type") || "").includes("application/json");
+  const data = isJson ? await res.json().catch(() => ({})) : {};
 
   if (!res.ok) {
-    // 👈 შევასწორეთ: ნებისმიერ 401 სტატუსზე გამოვიძახოთ onTokenExpired (თუ განსაზღვრულია)
-    if (res.status === 401 && onTokenExpired) {
+    // ტოკენის ვადაგასულობად ვთვლით მხოლოდ იმ 401-ს, რომელიც ტოკენით გაგზავნილ
+    // მოთხოვნაზე მოვიდა. არასწორი ლოგინი ("INVALID_CREDENTIALS") ამას არ იწვევს
+    const tokenProblem =
+      !data.code || ["UNAUTHORIZED", "TOKEN_EXPIRED"].includes(data.code);
+    if (res.status === 401 && sendToken && tokenProblem && onTokenExpired) {
       onTokenExpired();
     }
     throw new ApiError(res.status, data);
@@ -61,8 +77,25 @@ async function request(path, method = "GET", body, signal) {
   return data;
 }
 
+// კატეგორია იშვიათად იცვლება, ამიტომ ერთხელ ვტვირთავთ და ვიმახსოვრებთ.
+// signal-ს ამ მოთხოვნას არ ვაძლევთ: თუ ერთმა კომპონენტმა გააუქმა, მეორეს არ გაუფუჭდეს.
+// კალათა, პროფილი და შეკვეთები არასდროს ინახება აქ (სხვა მომხმარებელს არ უნდა გამოუჩნდეს)
+const categoryCache = new Map();
+
+function cachedCategory(slug) {
+  if (!categoryCache.has(slug)) {
+    const promise = request("/categories/" + slug).catch((err) => {
+      categoryCache.delete(slug); // წარუმატებელი არ ვიმახსოვროთ
+      throw err;
+    });
+    categoryCache.set(slug, promise);
+  }
+  return categoryCache.get(slug);
+}
+
 // ენდპოინტები
 export const api = {
+  // ავტორიზაცია
   register: (body) => request("/auth/register", "POST", body),
   login: (body) => request("/auth/login", "POST", body),
   me: () => request("/auth/me"),
@@ -72,10 +105,11 @@ export const api = {
   resetPassword: (body) => request("/auth/reset-password", "POST", body),
 
   // კატალოგი
-  category: (slug) => request("/categories/" + slug),
+  category: (slug) => cachedCategory(slug),
   products: (query, signal) =>
     request("/products?" + query, "GET", undefined, signal),
-  product: (slug) => request("/products/" + slug),
+  product: (slug, signal) =>
+    request("/products/" + slug, "GET", undefined, signal),
 
   // კალათა
   cart: () => request("/cart"),
@@ -83,11 +117,10 @@ export const api = {
   updateCartItem: (id, body) => request("/cart/items/" + id, "PATCH", body),
   removeCartItem: (id) => request("/cart/items/" + id, "DELETE"),
 
-  // ჩექაუთი
+  // ჩექაუთი და შეკვეთები
   checkout: () => request("/checkout"),
   createOrder: (body) => request("/orders", "POST", body),
-  confirmOrder: (id, code) =>
-    request(`/orders/${id}/confirm`, "POST", { code }),
+  confirmOrder: (id, code) => request("/orders/" + id + "/confirm", "POST", { code }),
   resendCode: (id) => request("/orders/" + id + "/resend-code", "POST"),
   order: (id) => request("/orders/" + id),
   orders: () => request("/orders"),

@@ -8,6 +8,7 @@ import { Skeleton } from "../components/Skeleton";
 import { FilterPanel } from "../components/FilterPanel";
 import { Pagination } from "../components/Pagination";
 import { Button } from "../components/Button";
+import { usePageTitle } from "../usePageTitle";
 
 // ლეიბლები თარგმანის ფაილშია, აქ მხოლოდ გასაღებებია
 const SORTS = [
@@ -101,6 +102,8 @@ export default function CatalogPage() {
   // კატეგორიის სახელი: ინგლისურზე nameEn, სხვა შემთხვევაში name
   const title =
     (lang === "en" ? category?.nameEn : category?.name) ?? t("catalog.title");
+
+  usePageTitle(title, t("catalog.description"));
 
   return (
     <main className="catalog" ref={topRef}>

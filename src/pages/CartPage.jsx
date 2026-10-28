@@ -1,13 +1,17 @@
 import { useState } from "react";
-import { Link, useNavigate} from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../useCart";
+import { useLang } from "../useLang";
+import { usePageTitle } from "../usePageTitle";
 import { Button } from "../components/Button";
 import { Alert } from "../components/Alert";
 
 export default function CartPage() {
   const { cart, busy, setQty, remove } = useCart();
+  const { t } = useLang();
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  usePageTitle(t("nav.cart"));
 
   if (!cart) {
     return (

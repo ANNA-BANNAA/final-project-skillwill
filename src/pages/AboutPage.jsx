@@ -1,6 +1,11 @@
 import { Link } from "react-router-dom";
+import { useLang } from "../useLang";
+import { usePageTitle } from "../usePageTitle";
 
 export default function AboutPage() {
+  const { t } = useLang();
+  usePageTitle(t("nav.about"));
+
   return (
     <main className="catalog page-text">
       <h1>ჩვენ შესახებ</h1>

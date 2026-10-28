@@ -49,5 +49,28 @@
     "total_one": "{count} პროდუქტი",
     "total_other": "{count} პროდუქტი"
   },
-  "common": { "loading": "იტვირთება..." }
+  "common": { "loading": "იტვირთება..." },
+  
+  "product": {
+  "home": "მთავარი",
+  "breadcrumbs": "გზა",
+  "imageOf": "სურათი {n} / {total}",
+  "rating": "რეიტინგი {rating} 5-დან",
+  "reviews_one": "{count} შეფასება",
+  "reviews_other": "{count} შეფასება",
+  "inStock": "მარაგშია",
+  "outOfStock": "ამოწურულია",
+  "onlyLeft": "დარჩა მხოლოდ {count}",
+  "warranty_one": "გარანტია {count} თვე",
+  "warranty_other": "გარანტია {count} თვე",
+  "decrease": "შემცირება",
+  "increase": "გაზრდა",
+  "viewCart": "კალათის ნახვა",
+  "specs": "მახასიათებლები",
+  "related": "მსგავსი პროდუქტები",
+  "notFound": "პროდუქტი ვერ მოიძებნა",
+  "backToCatalog": "კატალოგში დაბრუნება",
+  "loadError": "ვერ ჩაიტვირთა",
+  "retry": "თავიდან ცდა"
+}
 }

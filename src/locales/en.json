@@ -49,5 +49,28 @@
     "total_one": "{count} product",
     "total_other": "{count} products"
   },
-  "common": { "loading": "Loading..." }
+  "common": { "loading": "Loading..." }, 
+  
+  "product": {
+  "home": "Home",
+  "breadcrumbs": "Breadcrumbs",
+  "imageOf": "image {n} of {total}",
+  "rating": "Rated {rating} out of 5",
+  "reviews_one": "{count} review",
+  "reviews_other": "{count} reviews",
+  "inStock": "In stock",
+  "outOfStock": "Out of stock",
+  "onlyLeft": "Only {count} left",
+  "warranty_one": "{count} month warranty",
+  "warranty_other": "{count} months warranty",
+  "decrease": "Decrease quantity",
+  "increase": "Increase quantity",
+  "viewCart": "View cart",
+  "specs": "Specifications",
+  "related": "Related products",
+  "notFound": "Product not found",
+  "backToCatalog": "Back to catalog",
+  "loadError": "Could not be loaded",
+  "retry": "Try again"
+}
 }

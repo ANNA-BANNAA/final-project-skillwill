@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useLang } from "../useLang";
+import { usePageTitle } from "../usePageTitle";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { profileSchema } from "../schemas";
@@ -9,11 +11,19 @@ import { Button } from "../components/Button";
 import { Alert } from "../components/Alert";
 
 const EMPTY = {
-  name: "", email: "", phone: "", city: "", address: "",
-  newPassword: "", confirmNewPassword: "", currentPassword: "",
+  name: "",
+  email: "",
+  phone: "",
+  city: "",
+  address: "",
+  newPassword: "",
+  confirmNewPassword: "",
+  currentPassword: "",
 };
 
 export default function ProfilePage() {
+  const { t } = useLang();
+  usePageTitle(t("nav.profile"));
   const { setUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState(false);
@@ -34,14 +44,14 @@ export default function ProfilePage() {
   const values = watch();
 
   // ლიფტინგი: შედარების ლოგიკა გამოიყენება როგორც ღილაკის state-ისთვის, ისე submit-ისთვის
-  const hasChanges = loaded ? (
-    values.name !== (loaded.name || "") ||
-    values.email !== (loaded.email || "") ||
-    values.phone !== (loaded.phone || "") ||
-    values.city !== (loaded.city || "") ||
-    values.address !== (loaded.address || "") ||
-    Boolean(values.newPassword)
-  ) : false;
+  const hasChanges = loaded
+    ? values.name !== (loaded.name || "") ||
+      values.email !== (loaded.email || "") ||
+      values.phone !== (loaded.phone || "") ||
+      values.city !== (loaded.city || "") ||
+      values.address !== (loaded.address || "") ||
+      Boolean(values.newPassword)
+    : false;
 
   // მიმდინარე მონაცემების ჩატვირთვა და ფორმის შევსება
   useEffect(() => {
@@ -82,11 +92,16 @@ export default function ProfilePage() {
 
     // მხოლოდ შეცვლილი ველები
     const changed = {};
-    if (formValues.name !== (loaded?.name || "")) changed.name = formValues.name;
-    if (formValues.email !== (loaded?.email || "")) changed.email = formValues.email;
-    if (formValues.phone !== (loaded?.phone || "")) changed.phone = formValues.phone;
-    if (formValues.city !== (loaded?.city || "")) changed.city = formValues.city;
-    if (formValues.address !== (loaded?.address || "")) changed.address = formValues.address;
+    if (formValues.name !== (loaded?.name || ""))
+      changed.name = formValues.name;
+    if (formValues.email !== (loaded?.email || ""))
+      changed.email = formValues.email;
+    if (formValues.phone !== (loaded?.phone || ""))
+      changed.phone = formValues.phone;
+    if (formValues.city !== (loaded?.city || ""))
+      changed.city = formValues.city;
+    if (formValues.address !== (loaded?.address || ""))
+      changed.address = formValues.address;
 
     try {
       const payload = { currentPassword: formValues.currentPassword };
@@ -96,7 +111,7 @@ export default function ProfilePage() {
       const data = await api.updateMe(payload);
       const u = data.user;
       setLoaded(u);
-      setUser(u); 
+      setUser(u);
       reset({
         ...EMPTY,
         name: u.name || "",
@@ -108,9 +123,17 @@ export default function ProfilePage() {
       setSuccess(true);
     } catch (e) {
       if (e.code === "INVALID_CURRENT_PASSWORD") {
-        setError("currentPassword", { message: "პაროლი არასწორია" }, { shouldFocus: true });
+        setError(
+          "currentPassword",
+          { message: "პაროლი არასწორია" },
+          { shouldFocus: true },
+        );
       } else if (e.code === "EMAIL_TAKEN") {
-        setError("email", { message: "ეს ელფოსტა უკვე რეგისტრირებულია" }, { shouldFocus: true });
+        setError(
+          "email",
+          { message: "ეს ელფოსტა უკვე რეგისტრირებულია" },
+          { shouldFocus: true },
+        );
       } else if (e.status === 422 && e.errors) {
         if (e.errors._) {
           setBanner("შესაცვლელი არაფერია");
@@ -129,7 +152,11 @@ export default function ProfilePage() {
   }
 
   if (loading) {
-    return <main className="catalog"><p>იტვირთება...</p></main>;
+    return (
+      <main className="catalog">
+        <p>იტვირთება...</p>
+      </main>
+    );
   }
 
   if (loadError) {
@@ -137,7 +164,13 @@ export default function ProfilePage() {
       <main className="catalog">
         <div className="state-box">
           <p>პროფილი ვერ ჩაიტვირთა</p>
-          <Button onClick={() => { setLoadError(false); setLoading(true); setRetry(retry + 1); }}>
+          <Button
+            onClick={() => {
+              setLoadError(false);
+              setLoading(true);
+              setRetry(retry + 1);
+            }}
+          >
             ხელახლა ცდა
           </Button>
         </div>
@@ -157,29 +190,79 @@ export default function ProfilePage() {
           {success && <Alert>ცვლილებები შენახულია</Alert>}
           {banner && <Alert variant="error">{banner}</Alert>}
 
-          <FormField label="სახელი" id="name" autoComplete="name"
-            error={errors.name?.message} {...register("name")} />
-          <FormField label="ელფოსტა" id="email" type="email" autoComplete="email"
-            error={errors.email?.message} {...register("email")} />
-          <FormField label="ტელეფონი" id="phone" type="tel" autoComplete="tel"
+          <FormField
+            label="სახელი"
+            id="name"
+            autoComplete="name"
+            error={errors.name?.message}
+            {...register("name")}
+          />
+          <FormField
+            label="ელფოსტა"
+            id="email"
+            type="email"
+            autoComplete="email"
+            error={errors.email?.message}
+            {...register("email")}
+          />
+          <FormField
+            label="ტელეფონი"
+            id="phone"
+            type="tel"
+            autoComplete="tel"
             placeholder="+995 555 12 34 56"
-            error={errors.phone?.message} {...register("phone")} />
-          <FormField label="ქალაქი" id="city" autoComplete="address-level2"
-            error={errors.city?.message} {...register("city")} />
-          <FormField label="მისამართი" id="address" autoComplete="street-address"
-            error={errors.address?.message} {...register("address")} />
+            error={errors.phone?.message}
+            {...register("phone")}
+          />
+          <FormField
+            label="ქალაქი"
+            id="city"
+            autoComplete="address-level2"
+            error={errors.city?.message}
+            {...register("city")}
+          />
+          <FormField
+            label="მისამართი"
+            id="address"
+            autoComplete="street-address"
+            error={errors.address?.message}
+            {...register("address")}
+          />
 
           <h2 className="profile-subtitle">პაროლის შეცვლა (არასავალდებულო)</h2>
-          <FormField label="ახალი პაროლი" id="newPassword" password autoComplete="new-password"
-            error={errors.newPassword?.message} {...register("newPassword")} />
-          <FormField label="გაიმეორე ახალი პაროლი" id="confirmNewPassword" password autoComplete="new-password"
-            error={errors.confirmNewPassword?.message} {...register("confirmNewPassword")} />
+          <FormField
+            label="ახალი პაროლი"
+            id="newPassword"
+            password
+            autoComplete="new-password"
+            error={errors.newPassword?.message}
+            {...register("newPassword")}
+          />
+          <FormField
+            label="გაიმეორე ახალი პაროლი"
+            id="confirmNewPassword"
+            password
+            autoComplete="new-password"
+            error={errors.confirmNewPassword?.message}
+            {...register("confirmNewPassword")}
+          />
 
           <h2 className="profile-subtitle">დადასტურება</h2>
-          <FormField label="მიმდინარე პაროლი" id="currentPassword" password autoComplete="current-password"
-            error={errors.currentPassword?.message} {...register("currentPassword")} />
+          <FormField
+            label="მიმდინარე პაროლი"
+            id="currentPassword"
+            password
+            autoComplete="current-password"
+            error={errors.currentPassword?.message}
+            {...register("currentPassword")}
+          />
 
-          <Button type="submit" fullWidth loading={isSubmitting} disabled={!hasChanges}>
+          <Button
+            type="submit"
+            fullWidth
+            loading={isSubmitting}
+            disabled={!hasChanges}
+          >
             შენახვა
           </Button>
         </form>

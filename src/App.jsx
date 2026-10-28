@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import {
   BrowserRouter,
   Navigate,
@@ -6,32 +7,49 @@ import {
   useLocation,
 } from "react-router-dom";
 import { AuthProvider } from "./AuthContext";
+import { CartProvider } from "./CartContext";
+import { LangProvider } from "./LangProvider";
 import { useAuth } from "./useAuth";
 import { Header } from "./components/Header";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import ForgotPasswordPage from "./pages/ForgotPasswordPage";
-import CatalogPage from "./pages/CatalogPage";
-import ProductPage from "./pages/ProductPage";
-import ProfilePage from "./pages/ProfilePage";
-import { CartProvider } from "./CartContext";
-import CartPage from "./pages/CartPage";
-import CheckoutPage from "./pages/CheckoutPage";
-import ConfirmPage from "./pages/ConfirmPage";
-import OrderPage from "./pages/OrderPage";
-import OrdersPage from "./pages/OrdersPage";
-import AboutPage from "./pages/AboutPage";
-import BlogPage from "./pages/BlogPage";
-import BlogPostPage from "./pages/BlogPostPage";
-import ContactPage from "./pages/ContactPage";
-import { LangProvider } from "./LangProvider";
 import { Footer } from "./components/Footer";
+import { Skeleton } from "./components/Skeleton";
+import CatalogPage from "./pages/CatalogPage";
+
+// საწყის ბანდლში მხოლოდ ჰედერი, ფუტერი და კატალოგია.
+// დანარჩენი გვერდები იტვირთება მაშინ, როცა მომხმარებელი იქ მივა
+const ProductPage = lazy(() => import("./pages/ProductPage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const RegisterPage = lazy(() => import("./pages/RegisterPage"));
+const ForgotPasswordPage = lazy(() => import("./pages/ForgotPasswordPage"));
+const ProfilePage = lazy(() => import("./pages/ProfilePage"));
+const CartPage = lazy(() => import("./pages/CartPage"));
+const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
+const ConfirmPage = lazy(() => import("./pages/ConfirmPage"));
+const OrderPage = lazy(() => import("./pages/OrderPage"));
+const OrdersPage = lazy(() => import("./pages/OrdersPage"));
+const AboutPage = lazy(() => import("./pages/AboutPage"));
+const BlogPage = lazy(() => import("./pages/BlogPage"));
+const BlogPostPage = lazy(() => import("./pages/BlogPostPage"));
+const ContactPage = lazy(() => import("./pages/ContactPage"));
 
 function Loader() {
   return (
     <div style={{ minHeight: "100vh", display: "grid", placeItems: "center" }}>
       იტვირთება...
     </div>
+  );
+}
+
+// გვერდის ჩატვირთვისას: skeleton, არა ცარიელი ეკრანი
+function PageFallback() {
+  return (
+    <main className="catalog">
+      <div className="grid">
+        {Array.from({ length: 4 }, (_, i) => (
+          <Skeleton key={i} />
+        ))}
+      </div>
+    </main>
   );
 }
 
@@ -59,19 +77,20 @@ function GuestOnly({ children }) {
 export default function App() {
   return (
     <BrowserRouter>
-        <LangProvider>
-          <AuthProvider>
-            <CartProvider>
-              <Header />
+      <LangProvider>
+        <AuthProvider>
+          <CartProvider>
+            <Header />
+            <Suspense fallback={<PageFallback />}>
               <Routes>
-                <Route path="/about" element={<AboutPage />} />
-                <Route path="/blog" element={<BlogPage />} />
-                <Route path="/blog/:id" element={<BlogPostPage />} />
-                <Route path="/contact" element={<ContactPage />} />
                 {/* ღია გვერდები: ყველას შეუძლია ნახოს */}
                 <Route path="/" element={<CatalogPage />} />
                 <Route path="/catalog" element={<CatalogPage />} />
                 <Route path="/product/:slug" element={<ProductPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/blog" element={<BlogPage />} />
+                <Route path="/blog/:id" element={<BlogPostPage />} />
+                <Route path="/contact" element={<ContactPage />} />
 
                 {/* სტუმრებისთვის */}
                 <Route
@@ -100,7 +119,6 @@ export default function App() {
                 />
 
                 {/* დაცული: მხოლოდ შესულებისთვის */}
-
                 <Route
                   path="/profile"
                   element={
@@ -152,10 +170,11 @@ export default function App() {
 
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
-              <Footer />
-            </CartProvider>
-          </AuthProvider>
-        </LangProvider>
+            </Suspense>
+            <Footer />
+          </CartProvider>
+        </AuthProvider>
+      </LangProvider>
     </BrowserRouter>
   );
 }

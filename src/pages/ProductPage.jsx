@@ -3,25 +3,31 @@ import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api";
 import { useAuth } from "../useAuth";
 import { useCart } from "../useCart";
+import { useLang } from "../useLang";
+import { formatPrice } from "../intl";
 import { Button } from "../components/Button";
 import { Alert } from "../components/Alert";
 import { ProductCard } from "../components/ProductCard";
 
-function price(value, currency) {
-  const symbol = !currency || currency === "GEL" ? "₾" : currency;
-  return Number(value).toLocaleString("en-US") + " " + symbol;
-}
+// სერვერის კოდი → თარგმანის გასაღები
+const CART_ERRORS = {
+  OUT_OF_STOCK: "cart.errors.outOfStock",
+  INSUFFICIENT_STOCK: "cart.errors.insufficientStock",
+  PRODUCT_NOT_FOUND: "cart.errors.notFound",
+};
 
 function Stars({ rating }) {
+  const { t } = useLang();
   const full = Math.round(rating || 0);
   return (
-    <span className="stars" aria-label={"რეიტინგი " + rating + " 5-დან"}>
+    <span className="stars" role="img" aria-label={t("product.rating", { rating })}>
       {"★".repeat(full)}
       {"☆".repeat(5 - full)}
     </span>
   );
 }
 
+// ზომები იგივეა, რაც ნამდვილ გვერდზე: ჩატვირთვისას ლეიაუთი არ ხტება (CLS)
 function ProductSkeleton() {
   return (
     <main className="catalog" aria-busy="true">
@@ -38,6 +44,7 @@ function ProductSkeleton() {
 }
 
 function ProductView({ slug }) {
+  const { lang, t } = useLang();
   const { status } = useAuth();
   const { add } = useCart();
   const navigate = useNavigate();
@@ -50,7 +57,7 @@ function ProductView({ slug }) {
   const [qty, setQty] = useState(1);
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
-  const [cartError, setCartError] = useState("");
+  const [cartErrorKey, setCartErrorKey] = useState("");
 
   // სქროლი ზემოთ ახალ პროდუქტზე გადასვლისას
   useEffect(() => {
@@ -81,8 +88,8 @@ function ProductView({ slug }) {
     return (
       <main className="catalog">
         <div className="state-box">
-          <p>პროდუქტი ვერ მოიძებნა</p>
-          <Button onClick={() => navigate("/")}>კატალოგში დაბრუნება</Button>
+          <p>{t("product.notFound")}</p>
+          <Button onClick={() => navigate("/")}>{t("product.backToCatalog")}</Button>
         </div>
       </main>
     );
@@ -92,9 +99,14 @@ function ProductView({ slug }) {
     return (
       <main className="catalog">
         <div className="state-box">
-          <p>ვერ ჩაიტვირთა</p>
-          <Button onClick={() => { setError(null); setRetry(retry + 1); }}>
-            თავიდან ცდა
+          <p>{t("product.loadError")}</p>
+          <Button
+            onClick={() => {
+              setError(null);
+              setRetry(retry + 1);
+            }}
+          >
+            {t("product.retry")}
           </Button>
         </div>
       </main>
@@ -107,6 +119,14 @@ function ProductView({ slug }) {
   const maxQty = Math.max(1, Math.min(product.stock ?? 99, 99));
   const outOfStock = product.inStock === false;
   const specs = Object.entries(product.specs || {});
+  const money = (value) => formatPrice(value, lang, product.currency || "GEL");
+  const categoryName = product.category
+    ? (lang === "en" ? product.category.nameEn : null) || product.category.name
+    : "";
+
+  function imageAlt(i) {
+    return product.title + " — " + t("product.imageOf", { n: i + 1, total: images.length });
+  }
 
   function showImage(index) {
     setActive((index + images.length) % images.length);
@@ -124,28 +144,23 @@ function ProductView({ slug }) {
     }
     setAdding(true);
     setAdded(false);
-    setCartError("");
+    setCartErrorKey("");
     const result = await add(product.id, qty);
     setAdding(false);
-    if (result.ok) {
-      setAdded(true);
-    } else if (result.error?.code === "INSUFFICIENT_STOCK" || result.error?.code === "OUT_OF_STOCK") {
-      setCartError("მარაგში საკმარისი რაოდენობა არ არის");
-    } else {
-      setCartError(result.error?.message || "დაფიქსირდა შეცდომა");
-    }
+    if (result.ok) setAdded(true);
+    else setCartErrorKey(CART_ERRORS[result.error?.code] || "cart.errors.generic");
   }
 
   return (
     <main className="catalog">
       {/* Breadcrumbs */}
-      <nav className="breadcrumbs" aria-label="breadcrumbs">
-        <Link to="/">მთავარი</Link>
-        <span>/</span>
-        {product.category && (
+      <nav className="breadcrumbs" aria-label={t("product.breadcrumbs")}>
+        <Link to="/">{t("product.home")}</Link>
+        <span aria-hidden="true">/</span>
+        {categoryName && (
           <>
-            <Link to="/">{product.category.name}</Link>
-            <span>/</span>
+            <Link to="/">{categoryName}</Link>
+            <span aria-hidden="true">/</span>
           </>
         )}
         <span aria-current="page">{product.title}</span>
@@ -155,10 +170,15 @@ function ProductView({ slug }) {
         {/* გალერეა */}
         <div onKeyDown={onGalleryKey}>
           {images.length > 0 && (
+            // LCP-სურათი: lazy არა, მაღალი პრიორიტეტი, ფიქსირებული ზომა
             <img
               className="product-main-image"
               src={images[active]}
-              alt={product.title + " — სურათი " + (active + 1) + " / " + images.length}
+              alt={imageAlt(active)}
+              width="700"
+              height="700"
+              fetchPriority="high"
+              decoding="async"
             />
           )}
           {images.length > 1 && (
@@ -169,14 +189,11 @@ function ProductView({ slug }) {
                   type="button"
                   className={i === active ? "thumb thumb-active" : "thumb"}
                   onClick={() => setActive(i)}
-                  aria-label={"სურათი " + (i + 1)}
+                  aria-label={imageAlt(i)}
                   aria-current={i === active}
                 >
-                  <img
-                    src={src}
-                    alt={product.title + " — სურათი " + (i + 1) + " / " + images.length}
-                    loading="lazy"
-                  />
+                  {/* მინიატურა დეკორატიულია: სახელი ღილაკს აქვს */}
+                  <img src={src} alt="" width="64" height="64" loading="lazy" decoding="async" />
                 </button>
               ))}
             </div>
@@ -192,30 +209,32 @@ function ProductView({ slug }) {
             <p className="product-rating">
               <Stars rating={product.rating} /> {product.rating}
               {product.reviewsCount !== undefined && (
-                <span className="muted"> ({product.reviewsCount} შეფასება)</span>
+                <span className="muted"> ({t("product.reviews", { count: product.reviewsCount })})</span>
               )}
             </p>
           )}
 
           <div className="product-price-row">
-            <strong className="product-price">{price(product.price, product.currency)}</strong>
+            <strong className="product-price">{money(product.price)}</strong>
             {product.oldPrice && (
               <>
-                <s className="card-old-price">{price(product.oldPrice, product.currency)}</s>
+                <s className="card-old-price">{money(product.oldPrice)}</s>
                 <span className="discount-badge">-{product.discountPercent}%</span>
               </>
             )}
           </div>
 
           {outOfStock ? (
-            <p className="out-of-stock">ამოწურულია</p>
+            <p className="out-of-stock">{t("product.outOfStock")}</p>
           ) : product.stock <= 5 ? (
-            <p className="out-of-stock">დარჩა მხოლოდ {product.stock}</p>
+            <p className="out-of-stock">{t("product.onlyLeft", { count: product.stock })}</p>
           ) : (
-            <p className="in-stock">მარაგშია</p>
+            <p className="in-stock">{t("product.inStock")}</p>
           )}
 
-          {product.warrantyMonths > 0 && <p>გარანტია {product.warrantyMonths} თვე</p>}
+          {product.warrantyMonths > 0 && (
+            <p>{t("product.warranty", { count: product.warrantyMonths })}</p>
+          )}
           {product.description && <p>{product.description}</p>}
 
           {/* რაოდენობა და კალათა */}
@@ -223,7 +242,7 @@ function ProductView({ slug }) {
             <div className="stepper">
               <button
                 type="button"
-                aria-label="შემცირება"
+                aria-label={t("product.decrease")}
                 disabled={outOfStock || qty <= 1}
                 onClick={() => setQty(qty - 1)}
               >
@@ -232,7 +251,7 @@ function ProductView({ slug }) {
               <span aria-live="polite">{qty}</span>
               <button
                 type="button"
-                aria-label="გაზრდა"
+                aria-label={t("product.increase")}
                 disabled={outOfStock || qty >= maxQty}
                 onClick={() => setQty(qty + 1)}
               >
@@ -240,23 +259,23 @@ function ProductView({ slug }) {
               </button>
             </div>
             <Button loading={adding} disabled={outOfStock || adding} onClick={addToCart}>
-              {outOfStock ? "ამოწურულია" : "კალათაში დამატება"}
+              {outOfStock ? t("product.outOfStock") : t("cart.add")}
             </Button>
           </div>
 
           {added && (
             <Alert variant="success">
-              დაემატა კალათაში. <Link to="/cart">კალათის ნახვა</Link>
+              {t("cart.added")}. <Link to="/cart">{t("product.viewCart")}</Link>
             </Alert>
           )}
-          {cartError && <Alert variant="error">{cartError}</Alert>}
+          {cartErrorKey && <Alert variant="error">{t(cartErrorKey)}</Alert>}
         </div>
       </div>
 
-      {/* მახასიათებლები: სერვერი ამბობს, რა დახატო */}
+      {/* მახასიათებლები: სერვერი ამბობს, რა დახატო (API ერთენოვანია: ქართულად რჩება) */}
       {specs.length > 0 && (
         <>
-          <h2>მახასიათებლები</h2>
+          <h2>{t("product.specs")}</h2>
           <table className="specs">
             <tbody>
               {specs.map(([key, value]) => (
@@ -273,7 +292,7 @@ function ProductView({ slug }) {
       {/* მსგავსი პროდუქტები: იგივე ბარათი, რაც კატალოგში */}
       {product.related?.length > 0 && (
         <>
-          <h2>მსგავსი პროდუქტები</h2>
+          <h2>{t("product.related")}</h2>
           <div className="grid">
             {product.related.map((p) => (
               <ProductCard key={p.id} product={p} />

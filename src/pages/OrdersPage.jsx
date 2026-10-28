@@ -1,9 +1,13 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useLang } from "../useLang";
+import { usePageTitle } from "../usePageTitle";
 import { api } from "../api";
 import { Button } from "../components/Button";
 
 export default function OrdersPage() {
+  const { t } = useLang();
+  usePageTitle(t("nav.orders"));
   const [orders, setOrders] = useState(null);
   const [error, setError] = useState("");
   const [retry, setRetry] = useState(0);

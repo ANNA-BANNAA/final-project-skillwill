@@ -1,7 +1,12 @@
 import { Link } from "react-router-dom";
 import { POSTS } from "../blogPost";
+import { useLang } from "../useLang";
+import { usePageTitle } from "../usePageTitle";
 
 export default function BlogPage() {
+  const { t } = useLang();
+  usePageTitle(t("nav.blog"));
+
   return (
     <main className="catalog page-text">
       <h1>ბლოგი</h1>

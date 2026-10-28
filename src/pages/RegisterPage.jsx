@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useLang } from "../useLang";
+import { usePageTitle } from "../usePageTitle";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useNavigate } from "react-router-dom";
 import { registerSchema } from "../schemas";
@@ -11,6 +13,8 @@ import { Button } from "../components/Button";
 import { Alert } from "../components/Alert";
 
 export default function RegisterPage() {
+  const { t } = useLang();
+  usePageTitle(t("nav.signUp"));
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const [banner, setBanner] = useState("");
@@ -32,7 +36,9 @@ export default function RegisterPage() {
       navigate("/", { replace: true });
     } catch (e) {
       if (e.status === 422 && e.errors) {
-        Object.entries(e.errors).forEach(([field, message]) => setError(field, { message }));
+        Object.entries(e.errors).forEach(([field, message]) =>
+          setError(field, { message }),
+        );
       } else if (e.code === "EMAIL_TAKEN") {
         setError("email", { message: "ეს ელფოსტა უკვე რეგისტრირებულია" });
       } else if (e.code === "NETWORK_ERROR") {
@@ -48,19 +54,44 @@ export default function RegisterPage() {
       <form className="form" onSubmit={handleSubmit(onSubmit)} noValidate>
         {banner && <Alert variant="error">{banner}</Alert>}
 
-        <FormField label="სახელი" id="name" autoComplete="name"
-          error={errors.name?.message} {...register("name")} />
+        <FormField
+          label="სახელი"
+          id="name"
+          autoComplete="name"
+          error={errors.name?.message}
+          {...register("name")}
+        />
 
-        <FormField label="ელფოსტა" id="email" type="email" autoComplete="email"
-          error={errors.email?.message} {...register("email")} />
+        <FormField
+          label="ელფოსტა"
+          id="email"
+          type="email"
+          autoComplete="email"
+          error={errors.email?.message}
+          {...register("email")}
+        />
 
-        <FormField label="პაროლი" id="password" password autoComplete="new-password"
-          error={errors.password?.message} {...register("password")} />
+        <FormField
+          label="პაროლი"
+          id="password"
+          password
+          autoComplete="new-password"
+          error={errors.password?.message}
+          {...register("password")}
+        />
 
-        <FormField label="გაიმეორე პაროლი" id="confirmPassword" password autoComplete="new-password"
-          error={errors.confirmPassword?.message} {...register("confirmPassword")} />
+        <FormField
+          label="გაიმეორე პაროლი"
+          id="confirmPassword"
+          password
+          autoComplete="new-password"
+          error={errors.confirmPassword?.message}
+          {...register("confirmPassword")}
+        />
 
-        <Button type="submit" fullWidth loading={isSubmitting}>რეგისტრაცია</Button>
+        <Button type="submit" fullWidth loading={isSubmitting}>
+          რეგისტრაცია
+        </Button>
       </form>
 
       <div className="links">

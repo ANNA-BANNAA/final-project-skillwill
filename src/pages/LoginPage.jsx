@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { useLang } from "../useLang";
+import { usePageTitle } from "../usePageTitle";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { loginSchema } from "../schemas";
@@ -11,6 +13,8 @@ import { Button } from "../components/Button";
 import { Alert } from "../components/Alert";
 
 export default function LoginPage() {
+  const { t } = useLang();
+  usePageTitle(t("nav.signIn"));
   const { signIn, expired } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -35,7 +39,9 @@ export default function LoginPage() {
     } catch (e) {
       if (e.status === 422 && e.errors) {
         // სერვერის შეცდომები შესაბამის ველებზე
-        Object.entries(e.errors).forEach(([field, message]) => setError(field, { message }));
+        Object.entries(e.errors).forEach(([field, message]) =>
+          setError(field, { message }),
+        );
       } else if (e.code === "INVALID_CREDENTIALS") {
         setBanner("არასწორი ელფოსტა ან პაროლი");
       } else if (e.code === "NETWORK_ERROR") {
@@ -49,16 +55,32 @@ export default function LoginPage() {
   return (
     <AuthLayout title="შესვლა">
       <form className="form" onSubmit={handleSubmit(onSubmit)} noValidate>
-        {expired && !banner && <Alert variant="error">სესია ამოიწურა, გთხოვთ შეხვიდეთ თავიდან</Alert>}
+        {expired && !banner && (
+          <Alert variant="error">სესია ამოიწურა, გთხოვთ შეხვიდეთ თავიდან</Alert>
+        )}
         {banner && <Alert variant="error">{banner}</Alert>}
 
-        <FormField label="ელფოსტა" id="email" type="email" autoComplete="email"
-          error={errors.email?.message} {...register("email")} />
+        <FormField
+          label="ელფოსტა"
+          id="email"
+          type="email"
+          autoComplete="email"
+          error={errors.email?.message}
+          {...register("email")}
+        />
 
-        <FormField label="პაროლი" id="password" password autoComplete="current-password"
-          error={errors.password?.message} {...register("password")} />
+        <FormField
+          label="პაროლი"
+          id="password"
+          password
+          autoComplete="current-password"
+          error={errors.password?.message}
+          {...register("password")}
+        />
 
-        <Button type="submit" fullWidth loading={isSubmitting}>შესვლა</Button>
+        <Button type="submit" fullWidth loading={isSubmitting}>
+          შესვლა
+        </Button>
       </form>
 
       <div className="links">
